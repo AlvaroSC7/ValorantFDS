@@ -17,7 +17,7 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
         """
     
     #Get last match data
-    matches_request = api.get_lifetime_matches(region="eu",name=name,tag=tag,size=1)
+    matches_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
     #Parse data
     matchData = matches_request.json()
     with open ("archivo.json","w") as j:
@@ -27,6 +27,68 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
     #Calculate accuracy
     HS_accuracy = (headshots/total_shots) * 100
     return round(HS_accuracy,2)
+
+def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -> dict:
+    """
+        Get headshot percentage of a given player.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+            targetName  (str):  Name of the player (ally or enemy) whose data is being checked
+        Returns:
+            Response: Data for the player in the last user match
+        """
+    
+    #Get last match data
+    matches_request = api.get_v3_matches(region=region,name=name,tag=tag)
+    #Parse data
+    matchData = matches_request.json()
+    with open ("archivo.json","w") as j:
+        json.dump(matchData,j)
+    
+    playerFound = False
+    #Search for the selected player to get tag
+    for player in matchData['data'][0]['players']['all_players']:
+        if(str(player['name']) == targetName):
+            playerName = str(player['name'])
+            playerTag = str(player['tag'])
+            playerFound = True
+            break
+    
+    if(playerFound == False):
+        print("Error - Player not found in last game")
+        return None
+    else:
+        #Get data of the desired player
+        player_elo = get_this_season_elo(region= region,name= playerName, tag= playerTag)
+        player_HS = get_last_match_HS_percentage(region= region, name= playerName, tag= playerTag)
+        result = {'elo': player_elo, 'HS': player_HS}
+        return result
+
+def get_this_season_elo(region: str,name: str,tag: str) -> str:
+    """
+        Get player elo in the active season
+
+        Parameters:
+            region  (str):  The Valorant region.
+            name    (str):  The player name.
+            tag     (str):  The player tag.
+        Returns:
+            Response: The player elo in the current season
+        """
+    
+    #Get last match data
+    elo_request = api.get_this_season_elo_api(region= region,name= name,tag= tag)
+    #Parse data
+    eloData = elo_request.json()
+    with open ("archivo.json","w") as j:
+        json.dump(eloData,j)
+    
+    result = eloData['data']['currenttierpatched'] + " - " + str(eloData['data']['elo'])
+    
+    return result
 
 def get_player_data(player: str) -> dict:
     """
@@ -99,8 +161,8 @@ def get_mariano_lost_percentage() -> float:
 
 
 def main():
-    mariano_percentage = get_mariano_lost_percentage()
-    print(mariano_percentage)
+    mmr = get_last_match_player_data(region="eu",name="SpaguettiCoded",tag="EUW",targetName= "shadowdanna")
+    print(mmr)
 
 if __name__ == "__main__":
     main()
