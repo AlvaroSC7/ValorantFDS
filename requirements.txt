@@ -1,3 +1,2 @@
-json
-discord
+discord.py
 requests
