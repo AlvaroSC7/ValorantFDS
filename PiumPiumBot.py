@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from os.path import dirname, abspath
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr
 
 def get_bot_token():
     """
@@ -37,6 +37,7 @@ async def get_elo(ctx):
     elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
     await ctx.send(elo)
 
+#To Do: bugfix coger nombres con espacios
 @bot.command(name='last_game')
 async def get_last_game_player_data(ctx,target_player: str):
     author = ctx.message.author
@@ -48,18 +49,41 @@ async def get_last_game_player_data(ctx,target_player: str):
         response = f"{target_player}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
     await ctx.send(response)
 
+#To Do: comando sens
+#To Do: comando peak elo
+#To Do: comando average_elo de un lobby
+#To Do: comando para setear datos de jugadores
+#To Do: comando para obtener mira
+#To Do: comando sonido ace
+#To Do: comando acs last game
+
 @bot.command(name='wr')
 async def get_wr(ctx,target):
-    author = ctx.message.author
-    player = get_player_data(player=author)
-    elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
-    await ctx.send(elo)
+    #No target selected
+    if(target == None):
+        await ctx.send("Selecciona un mapa o agente para consultar tu win ratio. Ejemplo: !wr Haven | !wr Yoru")
+    else:
+        #Process the request
+        author = ctx.message.author
+        player = get_player_data(player=author)
+        wr = get_target_wr(region= player['region'], name= player['name'], tag= player['tag'], target= target)
+        #Check if map or agent do exist
+        if(wr == None):
+            await ctx.send("PiumPium no conoce ese mapa o agente :(")
+        else:
+            await ctx.send(f"Tu win ratio con {target} es {wr}%")
 
 @bot.command(name='Mariano')
 async def get_mariano_percentage(ctx):
     mariano_win_percentage = get_mariano_lost_percentage()
     response = f"Mariano ha perdido el {mariano_win_percentage}% de las partidas que ha jugado. Que barbaridad"
     await ctx.send(response)
+
+#To Do: Implement !last_game Reyna enemy
+
+#To Do: Implement !esports !vct !masters
+
+
 
 def main():
     token = get_bot_token()

@@ -67,5 +67,7 @@ def main():
     #Remove the old PROD version
     if(os.path.isfile(oldZipVersion)):
         os.remove(oldZipVersion)
+    #To Do: Implement function to delete #To Do comments from PROD
+
 if __name__ == "__main__":
     main()
