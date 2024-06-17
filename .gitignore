@@ -3,3 +3,4 @@
 PiumPiumToken.txt
 ValorantAPIKey.txt
 temp/*
+__pycache__/

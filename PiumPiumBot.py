@@ -58,7 +58,7 @@ async def get_last_game_player_data(ctx,target_player: str):
 #To Do: comando acs last game
 
 @bot.command(name='wr')
-async def get_wr(ctx,target):
+async def get_wr(ctx,target=None):
     #No target selected
     if(target == None):
         await ctx.send("Selecciona un mapa o agente para consultar tu win ratio. Ejemplo: !wr Haven | !wr Yoru")
@@ -69,7 +69,7 @@ async def get_wr(ctx,target):
         wr = get_target_wr(region= player['region'], name= player['name'], tag= player['tag'], target= target)
         #Check if map or agent do exist
         if(wr == None):
-            await ctx.send("PiumPium no conoce ese mapa o agente :(")
+            await ctx.send("O no has jugado con este mapa/agente o PiumPium no lo conoce :(")
         else:
             await ctx.send(f"Tu win ratio con {target} es {wr}%")
 
