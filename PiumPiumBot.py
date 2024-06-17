@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from os.path import dirname, abspath
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr, _get_target_type, get_last_match_agent_data
 
 def get_bot_token():
     """
@@ -39,15 +39,33 @@ async def get_elo(ctx):
 
 #To Do: bugfix coger nombres con espacios
 @bot.command(name='last_game')
-async def get_last_game_player_data(ctx,target_player: str):
+async def get_last_game_player_data(ctx,target_player: str= None):
     author = ctx.message.author
     player = get_player_data(player=author)
-    targetData = get_last_match_player_data(region= player['region'], name= player['name'], tag= player['tag'], targetName= target_player)
-    if(targetData == None):
-        response = "No se ha encontrado al jugador en la ultima partida"
+    if(target_player == None):
+        await ctx.send("Selecciona un jugador o personaje para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna")
     else:
-        response = f"{target_player}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
-    await ctx.send(response)
+        #Check if target is player name or player character
+        target_type = _get_target_type(target= target_player)
+        if(target_type == "map"):
+            await ctx.send("Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna")
+        else:
+            #Target type (only type is assured) is valid
+            if(target_type == "agent"):
+                #Get elo and HS of the player controlling the selected agent in last player's game
+                targetData = get_last_match_agent_data(region= player['region'], name= player['name'], tag= player['tag'], targetAgent= target_player)
+                if(targetData == None):
+                    response = f"Nadie jugo {target_player} en tu ultima partida"
+                else:
+                    response = f"{targetData['name']}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
+            else:
+                #Get elo and HS of the selected player
+                targetData = get_last_match_player_data(region= player['region'], name= player['name'], tag= player['tag'], targetName= target_player)
+                if(targetData == None):
+                    response = "No se ha encontrado al jugador en la ultima partida"
+                else:
+                    response = f"{target_player}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
+            await ctx.send(response)
 
 #To Do: comando sens
 #To Do: comando peak elo
@@ -56,6 +74,7 @@ async def get_last_game_player_data(ctx,target_player: str):
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
 #To Do: comando acs last game
+#To Do: comando help
 
 @bot.command(name='wr')
 async def get_wr(ctx,target=None):
@@ -78,8 +97,6 @@ async def get_mariano_percentage(ctx):
     mariano_win_percentage = get_mariano_lost_percentage()
     response = f"Mariano ha perdido el {mariano_win_percentage}% de las partidas que ha jugado. Que barbaridad"
     await ctx.send(response)
-
-#To Do: Implement !last_game Reyna enemy
 
 #To Do: Implement !esports !vct !masters
 

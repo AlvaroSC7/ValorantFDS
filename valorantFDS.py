@@ -66,6 +66,44 @@ def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -
         player_HS = get_last_match_HS_percentage(region= region, name= playerName, tag= playerTag)
         result = {'elo': player_elo, 'HS': player_HS}
         return result
+    
+def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str) -> dict:
+    """
+        Get target player elo and HS given the character he/she was playing in the last game.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+            targetAgent (str):  Agent that the target player was using
+        Returns:
+            Response: Data for the player in the last user match
+        """
+    
+    #Get last match data
+    matches_request = api.get_v3_matches(region=region,name=name,tag=tag)
+    #Parse data
+    matchData = matches_request.json()
+    _save_json(matchData,jsonName= "get_last_match_player_data")
+    
+    targetFound = False
+    #Search for the selected player to get tag
+    for player in matchData['data'][0]['players']['all_players']:
+        if(player['character'] == targetAgent):
+            targetName = player['name']
+            targetTag = player['tag']
+            targetFound = True
+            break
+    
+    if(targetFound == False):
+        print(f"Error - No player was using {targetAgent} in the last game of {name} #{tag}")
+        return None
+    else:
+        #Get data of the desired player
+        target_elo = get_this_season_elo(region= region,name= targetName, tag= targetTag)
+        target_HS = get_last_match_HS_percentage(region= region, name= targetName, tag= targetTag)
+        result = {'elo': target_elo, 'HS': target_HS, 'name': targetName}
+        return result
 
 def get_this_season_elo(region: str,name: str,tag: str) -> str:
     """
