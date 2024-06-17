@@ -39,6 +39,20 @@ class ValorantFDS_API:
 
         url = self.general_url + f"v3/matches/{region}/{name}/{tag}"
         return self._send_request(url)
+    
+    def get_content(self,locale: str=None):
+        """
+        Get all Valorant native content (maps, agents, skins etc...).
+
+        Parameters:
+            locale  (str):  The Valorant language. Optional
+        Returns:
+            Response: The HTTP response containing the content.
+        """
+
+        url = self.general_url + f"v1/content"
+        params = {'locale': locale}
+        return self._send_request(url,params= params)
         
     def get_this_season_elo_api(self,region: str,name: str,tag: str):
         """
