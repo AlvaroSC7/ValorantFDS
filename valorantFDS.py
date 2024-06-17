@@ -122,6 +122,109 @@ def get_player_data(player: str) -> dict:
     else:
         print("Wrong discord user name")
         return error_dict
+    
+def _get_target_type(target: str) -> str:
+    """
+        Determine if target is an agent or a map.
+
+        Parameters:
+            target      (str):  String with the target (map or agent)
+        Returns:
+            Response    (str): Type of the target.
+        """
+    #Get content from API
+    language = "es-ES"
+    content = api.get_content(locale= language)
+    contentData = content.json()
+    with open ("archivo.json","w") as j:
+        json.dump(contentData,j)
+    
+    maps = []
+    agents = []
+    #Extract all maps
+    for map in contentData['maps']:
+        if(map['name'] != "Null UI Data!"):
+            maps.append(map['name'])
+    print(maps)
+    #Extract all agents
+    for agent in contentData['characters']:
+        if(agent['name'] != "Null UI Data!"):
+            agents.append(agent['name'])
+    print(agents)
+
+    targetStandard = target.capitalize()  #Standarize target request
+    if(targetStandard in maps):
+        targetType = "map"
+    elif(targetStandard in agents):
+        targetType = "agent"
+    else:
+        print("Error - Target not found in map nor in agent lists")
+        return None
+    
+    return targetType
+
+def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
+    """
+        Get WR percentage of a certain map or agent.
+
+        Parameters:
+            region      (str):  The Valorant region.
+            name        (str):  The player name.
+            tag         (str):  The player tag.
+            target      (str):  String with the target (map or agent)
+        Returns:
+            Response    (float): WR of the player with the selected target .
+        """
+    targetStandard = target.capitalize()
+    targetType = _get_target_type(target= targetStandard)
+    if(targetType == None):
+        return None
+    else:
+        #Get liffetime match data
+        if(targetType == "map"):
+            targetWR = _get_map_wr(region= region,name= name,tag= tag,map= targetStandard)
+        elif(targetType == "agent"):
+            matches_request = _get_agent_wr(region= region,name= name,tag= tag,= targetStandard) #For agents v3/matches is needed
+        #Parse data
+        matchData = matches_request.json()
+        with open ("archivo.json","w") as j:
+            json.dump(matchData,j)  #To Do: delete .json storage from PROD
+
+        return targetType
+
+#To Do: IMPLEMENT
+def _get_map_wr(region: str,name: str,tag: str, map: str) -> float:
+"""
+    Get WR percentage of a certain map or agent.
+    Parameters:
+        region      (str):  The Valorant region.
+        name        (str):  The player name.
+        tag         (str):  The player tag.
+        map      (str):  String with the target (map or agent)
+    Returns:
+        Response    (float): WR of the player with the selected target .
+    """
+    matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,map= targetStandard)
+    with open ("archivo.json","w") as j:
+        json.dump(matchData,j)  #To Do: delete .json storage from PROD
+    return targetType
+
+#To Do: IMPLEMENT
+def _get_agent_wr(region: str,name: str,tag: str, agent: str) -> float:
+"""
+    Get WR percentage of a certain map or agent.
+    Parameters:
+        region      (str):  The Valorant region.
+        name        (str):  The player name.
+        tag         (str):  The player tag.
+        map      (str):  String with the target (map or agent)
+    Returns:
+        Response    (float): WR of the player with the selected target .
+    """
+    matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,= targetStandard) #For agents v3/matches is needed
+    with open ("archivo.json","w") as j:
+        json.dump(matchData,j)  #To Do: delete .json storage from PROD
+    return targetType
 
 
 def get_mariano_lost_percentage() -> float:
@@ -164,8 +267,7 @@ def _save_json(data,jsonName: str):
 
 
 def main():
-    mmr = get_last_match_player_data(region="eu",name="SpaguettiCoded",tag="EUW",targetName= "shadowdanna")
-    print(mmr)
+    map = get_wr_target(target= "sunset")
 
 if __name__ == "__main__":
     main()

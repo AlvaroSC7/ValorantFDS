@@ -48,6 +48,13 @@ async def get_last_game_player_data(ctx,target_player: str):
         response = f"{target_player}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
     await ctx.send(response)
 
+@bot.command(name='wr')
+async def get_wr(ctx,target):
+    author = ctx.message.author
+    player = get_player_data(player=author)
+    elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
+    await ctx.send(elo)
+
 @bot.command(name='Mariano')
 async def get_mariano_percentage(ctx):
     mariano_win_percentage = get_mariano_lost_percentage()
