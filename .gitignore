@@ -1,3 +1,5 @@
 # Txts excluded as they are often tokens
 
-.txt
+PiumPiumToken.txt
+ValorantAPIKey.txt
+temp/*
