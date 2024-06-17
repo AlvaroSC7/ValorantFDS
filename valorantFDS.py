@@ -136,8 +136,7 @@ def _get_target_type(target: str) -> str:
     language = "es-ES"
     content = api.get_content(locale= language)
     contentData = content.json()
-    with open ("archivo.json","w") as j:
-        json.dump(contentData,j)
+    _save_json(contentData,jsonName= "_get_target_type")
     
     maps = []
     agents = []
@@ -145,12 +144,10 @@ def _get_target_type(target: str) -> str:
     for map in contentData['maps']:
         if(map['name'] != "Null UI Data!"):
             maps.append(map['name'])
-    print(maps)
     #Extract all agents
     for agent in contentData['characters']:
         if(agent['name'] != "Null UI Data!"):
             agents.append(agent['name'])
-    print(agents)
 
     targetStandard = target.capitalize()  #Standarize target request
     if(targetStandard in maps):
@@ -184,44 +181,63 @@ def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
         if(targetType == "map"):
             targetWR = _get_map_wr(region= region,name= name,tag= tag,map= targetStandard)
         elif(targetType == "agent"):
-            matches_request = _get_agent_wr(region= region,name= name,tag= tag,= targetStandard) #For agents v3/matches is needed
-        #Parse data
-        matchData = matches_request.json()
-        with open ("archivo.json","w") as j:
-            json.dump(matchData,j)  #To Do: delete .json storage from PROD
+            targetWR = _get_agent_wr(region= region,name= name,tag= tag,agent= targetStandard) #For agents v3/matches is needed
+        else:
+            return None
 
-        return targetType
+        return targetWR
 
 #To Do: IMPLEMENT
 def _get_map_wr(region: str,name: str,tag: str, map: str) -> float:
-"""
-    Get WR percentage of a certain map or agent.
-    Parameters:
-        region      (str):  The Valorant region.
-        name        (str):  The player name.
-        tag         (str):  The player tag.
-        map      (str):  String with the target (map or agent)
-    Returns:
-        Response    (float): WR of the player with the selected target .
     """
-    matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,map= targetStandard)
-    with open ("archivo.json","w") as j:
-        json.dump(matchData,j)  #To Do: delete .json storage from PROD
-    return targetType
+        Get WR percentage of a certain map or agent.
+        Parameters:
+            region      (str):  The Valorant region.
+            name        (str):  The player name.
+            tag         (str):  The player tag.
+            map      (str):  String with the target (map or agent)
+        Returns:
+            Response    (float): WR of the player with the selected target .
+        """
+    matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,map= map)
+    matchesData = matches_request.json()
+    _save_json(matchesData,jsonName= "_get_map_wr")
+
+    #Parse won and lost games
+    wonMatches = 0
+    lostMatches = 0
+    for game in matchesData['data']:
+        #Skip DM
+        if(game['meta']['mode'] == "Deathmatch"):
+            continue
+        #If it's not a DM see who won
+        team = game['stats']['team'].lower()
+        if(team == "red"):
+            opposite_team = "blue"
+        else:
+            opposite_team = "red"
+        if(game['teams'][team] > game['teams'][opposite_team]):
+            wonMatches = wonMatches + 1
+        else:
+            lostMatches = lostMatches + 1
+    
+    #Calculate win percentage in that map
+    map_wr = (wonMatches/(wonMatches + lostMatches)) * 100
+    return round(map_wr,2)
 
 #To Do: IMPLEMENT
 def _get_agent_wr(region: str,name: str,tag: str, agent: str) -> float:
-"""
-    Get WR percentage of a certain map or agent.
-    Parameters:
-        region      (str):  The Valorant region.
-        name        (str):  The player name.
-        tag         (str):  The player tag.
-        map      (str):  String with the target (map or agent)
-    Returns:
-        Response    (float): WR of the player with the selected target .
     """
-    matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,= targetStandard) #For agents v3/matches is needed
+        Get WR percentage of a certain map or agent.
+        Parameters:
+            region      (str):  The Valorant region.
+            name        (str):  The player name.
+            tag         (str):  The player tag.
+            map      (str):  String with the target (map or agent)
+        Returns:
+            Response    (float): WR of the player with the selected target .
+        """
+    #matches_request = api.get_lifetime_matches(region= region,name= name,tag= tag,= targetStandard) #For agents v3/matches is needed
     with open ("archivo.json","w") as j:
         json.dump(matchData,j)  #To Do: delete .json storage from PROD
     return targetType
@@ -267,7 +283,12 @@ def _save_json(data,jsonName: str):
 
 
 def main():
-    map = get_wr_target(target= "sunset")
+    name = "SpaguettiCoded"
+    region = "eu"
+    tag = "EUW"
+    target = "sunset"
+    map_wr = get_target_wr(name= name, region= region, tag= tag, target= target)
+    print(f"WR in {target}: {map_wr}%")
 
 if __name__ == "__main__":
     main()
