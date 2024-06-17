@@ -1,7 +1,9 @@
 import json
 from valorantFDS_API import ValorantFDS_API
+from PiumPiumBot_Config import PiumPiumBot_Config
 
 api = ValorantFDS_API()
+bot = PiumPiumBot_Config()
 
 def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1) -> float:
     """
@@ -20,8 +22,7 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
     matches_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
     #Parse data
     matchData = matches_request.json()
-    with open ("archivo.json","w") as j:
-        json.dump(matchData,j)
+    _save_json(matchData,jsonName= "get_last_match_HS_percentage")
     headshots = matchData['data'][0]['stats']['shots']['head']
     total_shots = headshots + matchData['data'][0]['stats']['shots']['body'] + matchData['data'][0]['stats']['shots']['leg']
     #Calculate accuracy
@@ -45,8 +46,7 @@ def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -
     matches_request = api.get_v3_matches(region=region,name=name,tag=tag)
     #Parse data
     matchData = matches_request.json()
-    with open ("archivo.json","w") as j:
-        json.dump(matchData,j)
+    _save_json(matchData,jsonName= "get_last_match_player_data")
     
     playerFound = False
     #Search for the selected player to get tag
@@ -83,8 +83,7 @@ def get_this_season_elo(region: str,name: str,tag: str) -> str:
     elo_request = api.get_this_season_elo_api(region= region,name= name,tag= tag)
     #Parse data
     eloData = elo_request.json()
-    with open ("archivo.json","w") as j:
-        json.dump(eloData,j)
+    _save_json(eloData,jsonName= "get_this_season_elo")
     
     result = eloData['data']['currenttierpatched'] + " - " + str(eloData['data']['elo'])
     
@@ -131,11 +130,10 @@ def get_mariano_lost_percentage() -> float:
     matches_request = api.get_lifetime_matches(region= mariano['region'],name= mariano['name'],tag= mariano['tag'])
     #Parse data
     matchData = matches_request.json()
-    with open ("archivo.json","w") as j:
-        json.dump(matchData,j)
+    _save_json(matchData,jsonName= "get_mariano_lost_percentage")
     #Get won and lost games
-        mariano_won = 0
-        mariano_lost = 0
+    mariano_won = 0
+    mariano_lost = 0
     for game in matchData['data']:
         mariano_team = game['stats']['team'].lower()
         #Check that game is not DM
@@ -157,6 +155,11 @@ def get_mariano_lost_percentage() -> float:
     #Calculate loose percentage
     mariano_lost_percentage = (mariano_lost/(mariano_lost + mariano_won)) * 100
     return round(mariano_lost_percentage,2)
+
+def _save_json(data,jsonName: str):
+    if(bot.type == "DEV"):
+        with open (bot.TEMP_PATH + "/" + jsonName + ".json","w") as j:
+            json.dump(data,j)
 
 
 
