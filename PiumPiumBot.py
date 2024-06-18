@@ -39,11 +39,14 @@ async def get_elo(ctx):
 
 #To Do: bugfix coger nombres con espacios
 @bot.command(name='last_game')
-async def get_last_game_player_data(ctx,target_player: str= None):
+async def get_last_game_player_data(ctx,target_player: str= None,target_team: str= None):
     author = ctx.message.author
     player = get_player_data(player=author)
+    #Check first given command
     if(target_player == None):
         await ctx.send("Selecciona un jugador o personaje para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna")
+    elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
+        await ctx.send("Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados")
     else:
         #Check if target is player name or player character
         target_type = _get_target_type(target= target_player)
@@ -53,9 +56,13 @@ async def get_last_game_player_data(ctx,target_player: str= None):
             #Target type (only type is assured) is valid
             if(target_type == "agent"):
                 #Get elo and HS of the player controlling the selected agent in last player's game
-                targetData = get_last_match_agent_data(region= player['region'], name= player['name'], tag= player['tag'], targetAgent= target_player)
-                if(targetData == None):
+                targetData = get_last_match_agent_data(region= player['region'], name= player['name'], tag= player['tag'], targetAgent= target_player, targetTeam= target_team)
+                if(targetData == None and target_team == None):
                     response = f"Nadie jugo {target_player} en tu ultima partida"
+                elif(targetData == None and target_team == "ally"):
+                    response = f"Nadie jugo {target_player} en tu equipo en la ultima partida"
+                elif(targetData == None and target_team == "enemy"):
+                    response = f"Nadie jugo {target_player} en su equipo en la ultima partida"
                 else:
                     response = f"{targetData['name']}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
             else:
@@ -75,6 +82,8 @@ async def get_last_game_player_data(ctx,target_player: str= None):
 #To Do: comando sonido ace
 #To Do: comando acs last game
 #To Do: comando help
+#To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
+#To Do: poner los comandos no cap sensitive
 
 @bot.command(name='wr')
 async def get_wr(ctx,target=None):
