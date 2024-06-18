@@ -44,7 +44,6 @@ async def get_elo(ctx):
     elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
     await ctx.send(elo)
 
-#To Do: bugfix coger nombres con espacios
 @bot.command(name='last_game')
 async def get_last_game_player_data(ctx,target_player: str= None,target_team: str= None):
     author = ctx.message.author
@@ -53,7 +52,7 @@ async def get_last_game_player_data(ctx,target_player: str= None,target_team: st
     if(target_player == None):
         await ctx.send("Selecciona un jugador o personaje para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna")
     elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
-        await ctx.send("Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados")
+        await ctx.send("Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados. Si querias poner un nombre con espacios usa \" \". Ejemplo: !last_game \"Un nombre\"")
     else:
         #Check if target is player name or player character
         target_type = _get_target_type(target= target_player)
