@@ -35,6 +35,7 @@ def update_version(versionToIncrease: str, ws_path: str) -> str:
     with open (version_path,"r") as f:
         data = f.read()
         newData = re.sub("version = *.*.*", newVersion, data,)
+    #To Do: bugfix, add the change to type "PROD" here, it is not done at all!
     #Overwrite new version
     with open (version_path,"w") as f:
         f.write(newData)
