@@ -66,6 +66,101 @@ def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -
         player_HS = get_last_match_HS_percentage(region= region, name= playerName, tag= playerTag)
         result = {'elo': player_elo, 'HS': player_HS}
         return result
+    
+#To Do: implement snowflake
+#To Do: use this function in all tue places it was hardcoded
+def _get_player_and_opposite_team_v3(matchData: json,name: str) -> tuple:
+        """
+        Get the team a player was playing on in a certain json v3.
+
+        Parameters:
+            matchData   (json): Json file with all the data of the last game
+            name        (str):  Name of the user
+        Returns:
+            Response: Tuple with first the team the player was on and second the other team
+        """
+        player_team = None
+        #Extract the team of the player
+        for player in matchData['data'][0]['players']['all_players']:
+            if(player['name'] == name):
+                player_team = player['team'].lower()
+                break
+        #Get opposite team
+        if(player_team == "red"):
+            opposite_team = "blue"
+        elif(player_team == "blue"):
+            opposite_team = "red"
+        else:
+            opposite_team = None
+        return player_team, opposite_team
+
+def _extract_player_data_with_agent_and_team_v3(matchData: json,agent: str, team: str) -> dict:
+        """
+        Looks for a player tag and name in a certain team knowing his agent.
+
+        Parameters:
+            matchData   (json): Json file with all the data of the last game
+            agent       (str):  Name of the agent the target was using (or not)
+            team        (str):  blue or red. Team to look in
+        Returns:
+            Response: Dictionary with the target tag and name with the tag of the target. None if no one played this agent in the selected team
+        """
+        targetFound = False
+        #Search for the selected player to get tag. First look in the enemy team
+        for player in matchData['data'][0]['players'][team]:
+            if(player['character'] == agent):
+                targetName = player['name']
+                targetTag = player['tag']
+                targetFound = True
+                break
+        
+        if(targetFound == False):
+            return None
+        else:
+            return {'name': targetName, 'tag': targetTag}
+    
+def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,targetTeam: str= None) -> dict:
+    """
+        Get target player elo and HS given the character he/she was playing in the last game.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+            targetAgent (str):  Agent that the target player was using
+        Returns:
+            Response: Data for the player in the last user match
+        """
+    
+    #Get last match data
+    matches_request = api.get_v3_matches(region=region,name=name,tag=tag)
+    #Parse data
+    matchData = matches_request.json()
+    _save_json(matchData,jsonName= "get_last_match_agent_data")
+
+    #Get which team was the player on to start looking on the enemies side
+    player_team, opposite_team = _get_player_and_opposite_team_v3(matchData= matchData, name= name)
+    if(type(targetTeam) == str):    #Normalize only if it is not None
+        targetTeam = targetTeam.lower()
+    
+    targetData = None
+    #Search for the selected player to get tag. First look in the enemy team
+    if(targetTeam != "ally"):
+        targetData = _extract_player_data_with_agent_and_team_v3(matchData= matchData, agent= targetAgent, team= opposite_team)
+    
+    #If no one was playing the agent in the enemy team, or ally team was explicitely selected, look in the player's team
+    if((targetData == None and targetTeam == None) or (targetTeam == "ally")):
+        targetData = _extract_player_data_with_agent_and_team_v3(matchData= matchData, agent= targetAgent, team= player_team)
+    
+    if(targetData == None):
+        print(f"Error - No player was using {targetAgent} in the last game of {name} #{tag}")
+        return None
+    else:
+        #Get data of the desired player
+        target_elo = get_this_season_elo(region= region,name= targetData['name'], tag= targetData['tag'])
+        target_HS = get_last_match_HS_percentage(region= region, name= targetData['name'], tag= targetData['tag'])
+        result = {'elo': target_elo, 'HS': target_HS, 'name': targetData['name']}
+        return result
 
 def get_this_season_elo(region: str,name: str,tag: str) -> str:
     """
@@ -84,8 +179,17 @@ def get_this_season_elo(region: str,name: str,tag: str) -> str:
     #Parse data
     eloData = elo_request.json()
     _save_json(eloData,jsonName= "get_this_season_elo")
-    
-    result = eloData['data']['currenttierpatched'] + " - " + str(eloData['data']['elo'])
+
+    #Player has a competitive rank
+    if(eloData['data']['currenttierpatched'] != None and eloData['data']['elo'] != None):
+        result = eloData['data']['currenttierpatched'] + " - " + str(eloData['data']['elo'])
+    #Player is unranked, get level at least
+    else:
+        level_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
+        levelData = level_request.json()
+        _save_json(levelData,jsonName= "get_this_season_elo_level")
+        level = levelData['data'][0]['stats']['level']
+        result = f"Unrated - Nivel {level}"
     
     return result
 
