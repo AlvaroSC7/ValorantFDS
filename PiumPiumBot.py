@@ -22,12 +22,19 @@ def get_bot_token():
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!',intents=intents)
 
+#To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
+async def get_HS_percentage_deprecate(ctx):
+    await get_HS_percentage(ctx)
+    response = f"!HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando"
+    await ctx.send(response)
+
+@bot.command(name='hs')
 async def get_HS_percentage(ctx):
     author = ctx.message.author
     player = get_player_data(player=author)
     HS_accuracy = get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
-    response = f"Your accuracy in the last game was: {HS_accuracy}%"
+    response = f"Tu precision en la ultima partida fue: {HS_accuracy}%"
     await ctx.send(response)
 
 @bot.command(name='elo')
@@ -83,7 +90,6 @@ async def get_last_game_player_data(ctx,target_player: str= None,target_team: st
 #To Do: comando acs last game
 #To Do: comando help
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
-#To Do: poner los comandos no cap sensitive
 
 @bot.command(name='wr')
 async def get_wr(ctx,target=None):
