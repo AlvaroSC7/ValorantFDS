@@ -25,6 +25,19 @@ class ValorantFDS_API:
         params = {'mode': mode, 'map': map, 'page': page, 'size': size}
         return self._send_request(url, params)
     
+    def get_lifetime_matches_by_matchId(self,matchId: str):
+        """
+        Get Valorant lifetime matches stat for a player.
+
+        Parameters:
+            matchId  (str):  MatchID.
+        Returns:
+            Response: The HTTP response containing the game data.
+        """
+
+        url = self.general_url + f"v2/match/{matchId}"
+        return self._send_request(url)
+    
     def get_v3_matches(self,region: str,name: str,tag: str):
         """
         Get Valorant last match of a player in detail.
