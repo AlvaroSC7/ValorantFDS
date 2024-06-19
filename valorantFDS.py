@@ -23,11 +23,15 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
     #Parse data
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "get_last_match_HS_percentage")
-    headshots = matchData['data'][0]['stats']['shots']['head']
-    total_shots = headshots + matchData['data'][0]['stats']['shots']['body'] + matchData['data'][0]['stats']['shots']['leg']
-    #Calculate accuracy
-    HS_accuracy = (headshots/total_shots) * 100
-    return round(HS_accuracy,2)
+    if(len(matchData['data']) == 0):
+       print("Error - No recent games found for the user")
+       return None
+    else:
+        headshots = matchData['data'][0]['stats']['shots']['head']
+        total_shots = headshots + matchData['data'][0]['stats']['shots']['body'] + matchData['data'][0]['stats']['shots']['leg']
+        #Calculate accuracy
+        HS_accuracy = (headshots/total_shots) * 100
+        return round(HS_accuracy,2)
 
 def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -> dict:
     """
@@ -50,6 +54,9 @@ def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -
     
     playerFound = False
     #Search for the selected player to get tag
+    if(len(matchData['data']) == 0):
+       print("Error - No recent games found for the user")
+       return None
     for player in matchData['data'][0]['players']['all_players']:
         if(str(player['name']) == targetName):
             playerName = str(player['name'])
@@ -79,6 +86,9 @@ def _get_player_and_opposite_team_v3(matchData: json,name: str) -> tuple:
         Returns:
             Response: Tuple with first the team the player was on and second the other team
         """
+        if(len(matchData['data']) == 0):
+            print("Error - No recent games found for the user")
+            return None
         player_team = None
         #Extract the team of the player
         for player in matchData['data'][0]['players']['all_players']:
@@ -105,6 +115,9 @@ def _extract_player_data_with_agent_and_team_v3(matchData: json,agent: str, team
         Returns:
             Response: Dictionary with the target tag and name with the tag of the target. None if no one played this agent in the selected team
         """
+        if(len(matchData['data']) == 0):
+            print("Error - No recent games found for the user")
+            return None
         targetFound = False
         #Search for the selected player to get tag. First look in the enemy team
         for player in matchData['data'][0]['players'][team]:
@@ -137,9 +150,13 @@ def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,ta
     #Parse data
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "get_last_match_agent_data")
+    if(len(matchData['data']) == 0):
+       print("Error - No recent games found for the user")
+       return None
 
     #Get which team was the player on to start looking on the enemies side
     player_team, opposite_team = _get_player_and_opposite_team_v3(matchData= matchData, name= name)
+    
     if(type(targetTeam) == str):    #Normalize only if it is not None
         targetTeam = targetTeam.lower()
     
@@ -188,6 +205,9 @@ def get_this_season_elo(region: str,name: str,tag: str) -> str:
         level_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
         levelData = level_request.json()
         _save_json(levelData,jsonName= "get_this_season_elo_level")
+        if(len(levelData['data'] == 0)):
+            print("Error - No recent games found for the user")
+            return None
         level = levelData['data'][0]['stats']['level']
         result = f"Unrated - Nivel {level}"
     
@@ -204,6 +224,7 @@ def get_player_data(player: str) -> dict:
         """
     #To Do: Implement this in private json for privacy reasons
     #To Do: Add puuid to the dictionary for every player
+    #To Do: Move tokens to a folder private/
     alvaro = {'region': 'eu', 'name': 'SpaguettiCoded', 'tag': "EUW"}
     dani = {'region': 'eu', 'name': 'Barl0ck', 'tag': "0205"}
     ana = {'region': 'eu', 'name': 'shadowdanna', 'tag': "81502"}
@@ -423,8 +444,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    map_wr = _get_agent_wr(name= name, region= region, tag= tag,agent= target)
-    print(f"WR with {target}: {map_wr}%")
+    map_wr = get_last_match_player_data(name= name, region= region, tag= tag, targetName= "IMissSmurf")
 
 if __name__ == "__main__":
     main()
