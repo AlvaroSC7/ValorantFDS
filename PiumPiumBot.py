@@ -34,7 +34,10 @@ async def get_HS_percentage(ctx):
     author = ctx.message.author
     player = get_player_data(player=author)
     HS_accuracy = get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
-    response = f"Tu precision en la ultima partida fue: {HS_accuracy}%"
+    if(HS_accuracy != None):
+        response = f"Tu precision en la ultima partida fue: {HS_accuracy}%"
+    else:
+        response = "No se han encontrado partidas recientes"
     await ctx.send(response)
 
 @bot.command(name='elo')
@@ -42,7 +45,10 @@ async def get_elo(ctx):
     author = ctx.message.author
     player = get_player_data(player=author)
     elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
-    await ctx.send(elo)
+    if(elo != None):
+        await ctx.send(elo)
+    else:
+        await ctx.send("No se han encontrado partidas recientes ni datos de usuario")
 
 @bot.command(name='last_game')
 async def get_last_game_player_data(ctx,target_player: str= None,target_team: str= None):
@@ -87,7 +93,7 @@ async def get_last_game_player_data(ctx,target_player: str= None,target_team: st
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
 #To Do: comando acs last game
-#To Do: comando help
+#To Do: comando help. Add it to "Sobre mi" en el bot en Discord Developer.
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 
 @bot.command(name='wr')
