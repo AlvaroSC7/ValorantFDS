@@ -69,6 +69,7 @@ def main():
     if(os.path.isfile(oldZipVersion)):
         os.remove(oldZipVersion)
     #To Do: Implement function to delete #To Do comments from PROD
+    #To Do: Implement function to delete main from valorantFDS.py since it is only used for testing purposes
 
 if __name__ == "__main__":
     main()
