@@ -27,9 +27,9 @@ class ErrorCodes:
         #Discord related errors
         self.ERR_CODE_120 = "ERR_CODE_120"  #Wrong discord user name
         self.ERR_CODE_121 = "ERR_CODE_121"  #Selected agent or map do not exist
-        self.ERR_CODE_122 = "ERR_CODE_122"  #Agent or user name not selected for !last_game
+        self.ERR_CODE_122 = "ERR_CODE_122"  #No input parameter given. No map or agent selected for a command that required it
         self.ERR_CODE_123 = "ERR_CODE_123"  #Wrong team name
-        self.ERR_CODE_124 = "ERR_CODE_124"
+        self.ERR_CODE_124 = "ERR_CODE_124"  #Map selected when agent or player name was expected
         self.ERR_CODE_125 = "ERR_CODE_125"
         self.ERR_CODE_126 = "ERR_CODE_126"
         self.ERR_CODE_127 = "ERR_CODE_127"
@@ -89,6 +89,7 @@ def callErrorGroup(errorCode: str, errorCodeGroup: str):
         result = errorUnknownError()
     return result
 
+#To Do: register do here the print with the error ID in english so code is cleaner
 def errorGroupNoDataAPI(errorCode: str) ->str:
     if(errorCode == allErrorCodes.ERR_CODE_100):
         result = "El jugador ha cambiado su nombre o tag desde tu última partida con el"
@@ -120,12 +121,14 @@ def errorGroupInternal(errorCode: str) ->str:
 def errorGroupDiscord(errorCode: str) ->str:
     if(errorCode == allErrorCodes.ERR_CODE_120):
         result = "Este usuario de Discord no tiene datos de Valorant registrados"
-    if(errorCode == allErrorCodes.ERR_CODE_121):
+    elif(errorCode == allErrorCodes.ERR_CODE_121):
         result = "No se ha reconocido el agente o mapa especificado"
-    if(errorCode == allErrorCodes.ERR_CODE_122):
-        result = "Selecciona un jugador o personaje para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna"
-    if(errorCode == allErrorCodes.ERR_CODE_123):
+    elif(errorCode == allErrorCodes.ERR_CODE_122):
+        result = "Faltan parametros de entrada para el comando. Ejemplo: !last_game shadowdanna | !last_game Reyna | !wr Abyss"
+    elif(errorCode == allErrorCodes.ERR_CODE_123):
         result = "Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados. Si querias poner un nombre con espacios usa \" \". Ejemplo: !last_game \"Un nombre\""
+    elif(errorCode == allErrorCodes.ERR_CODE_124):
+        result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna"
     else:
         result = errorUnknownError()
     return result
