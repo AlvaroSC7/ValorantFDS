@@ -37,6 +37,8 @@ errorCodeList = ErrorCodes()
 #To Do: comando help. Add it to "Sobre mi" en el bot en Discord Developer.
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !esports !vct !masters
+#To Do: Implement !host to return where the answering bot is running
+#To Do: Implement !version to show the whole version info (version, prod/dev, host)
 
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
@@ -78,7 +80,14 @@ async def get_elo(ctx):
 
     await ctx.send(response)
 
+#To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='last_game')
+async def get_last_game_player_data_deprecate(ctx,target_player: str= None,target_team: str= None):
+    await get_last_game_player_data(ctx, target_player= target_player, target_team= target_team)
+    response = f"!last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando"
+    await ctx.send(response)
+
+@bot.command(name='lg')
 async def get_last_game_player_data(ctx,target_player: str= None,target_team: str= None):
     author = ctx.message.author
     player = get_player_data(player=author)
@@ -144,7 +153,14 @@ async def get_wr(ctx,target=None):
     
     await ctx.send(response)
 
+#To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='Mariano')
+async def get_mariano_percentage_deprecate(ctx):
+    await get_mariano_percentage(ctx)
+    response = f"!Mariano no esta continuado y se eliminará en futuras versiones en favor de !mariano, considera usar ya el nuevo comando"
+    await ctx.send(response)
+
+@bot.command(name='mariano')
 async def get_mariano_percentage(ctx):
     mariano_win_percentage = get_mariano_lost_percentage()
     errorCode = handleErrorCode(mariano_win_percentage)
