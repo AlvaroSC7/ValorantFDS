@@ -704,7 +704,7 @@ def _from_elo_to_rank(elo: int) -> str:
         result = rank
     else:
         subRank = int((elo - (300 * rankIndex)) / 100) + 1
-        result = f"{rank} {subRank} - {round(elo, 0)}"
+        result = f"{rank} {subRank} - {int(elo)}"
     return result
 
 def _get_last_match_ID(region: str,name: str,tag: str) -> str:
