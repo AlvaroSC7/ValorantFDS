@@ -2,7 +2,7 @@ from os.path import dirname, abspath
 
 class PiumPiumBot_Config:
     def __init__(self):
-        self.version = '1.0.3'
+        self.version = '1.0.4'
         self.type = "PROD"
 
         ws_path = dirname(abspath(__file__))
