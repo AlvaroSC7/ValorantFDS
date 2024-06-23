@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from os.path import dirname, abspath
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr, _get_target_type, get_last_match_agent_data
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr, _get_target_type, get_last_match_agent_data, get_avg_elo
 from PiumPiumBot_ErrorCodes import ErrorCodes
 
 def get_bot_token():
@@ -30,7 +30,6 @@ errorCodeList = ErrorCodes()
 ##################################################################
 #To Do: comando sens
 #To Do: comando peak elo
-#To Do: comando average_elo de un lobby
 #To Do: comando para setear datos de jugadores
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
@@ -178,6 +177,25 @@ async def get_wr(ctx,target = commands.parameter(default=None, description="nomb
                 response = errorCode
             else:
                 response = f"Tu win ratio con {target} es {wr}%"
+    
+    await ctx.send(response)
+
+@bot.command(name='avg_elo')
+async def get_average_elo(ctx):
+    "Indica el elo medio de cada equipo de tu ultima partida"
+
+    author = ctx.message.author
+    player = get_player_data(player=author)
+    errorCode = errorCodeList.handleErrorCode(player)
+    if(errorCode != None):
+        response = errorCode
+    else:
+        avg_elo = get_avg_elo(region= player['region'], name= player['name'], tag= player['tag'])
+        errorCode = errorCodeList.handleErrorCode(avg_elo)
+        if(errorCode != None):
+            response = errorCode
+        else:
+            response = avg_elo
     
     await ctx.send(response)
 
