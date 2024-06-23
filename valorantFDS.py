@@ -1,7 +1,7 @@
 import json
 from valorantFDS_API import ValorantFDS_API
 from PiumPiumBot_Config import PiumPiumBot_Config
-from PiumPiumBot_ErrorCodes import ErrorCodes, handleErrorCode, isErrorCode
+from PiumPiumBot_ErrorCodes import ErrorCodes
 
 api = ValorantFDS_API()
 bot = PiumPiumBot_Config()
@@ -108,9 +108,9 @@ def get_last_match_player_data(region: str,name: str,tag: str,targetName: str) -
         #Get data of the desired player
         player_elo = get_this_season_elo(region= region,name= playerName, tag= playerTag)
         player_HS = get_last_match_HS_percentage(region= region, name= playerName, tag= playerTag)
-        if(isErrorCode(player_elo) == True):
+        if(errorCode.isErrorCode(player_elo) == True):
             return player_elo #Return error code
-        elif(isErrorCode(player_HS) == True):
+        elif(errorCode.isErrorCode(player_HS) == True):
             return player_HS #Return error code
         else:
             result = {'elo': player_elo, 'HS': player_HS}
@@ -153,9 +153,9 @@ def get_last_match_player_data_old_game(gameId: str, targetName: str) -> dict:
         region = matchData['data']['metadata']['region']
         player_elo = get_this_season_elo(region= region,name= playerName, tag= playerTag)
         player_HS = get_last_match_HS_percentage(region= region, name= playerName, tag= playerTag)
-        if(isErrorCode(player_elo) == True):
+        if(errorCode.isErrorCode(player_elo) == True):
             return player_elo #Return error code
-        elif(isErrorCode(player_HS) == True):
+        elif(errorCode.isErrorCode(player_HS) == True):
             return player_HS #Return error code
         else:
             result = {'elo': player_elo, 'HS': player_HS}
@@ -265,7 +265,7 @@ def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,ta
 
     #Get which team was the player on to start looking on the enemies side
     player_and_opposite_team = _get_player_and_opposite_team(matchData= matchData, name= name, jsonVersion= "v3")
-    if(isErrorCode(player_and_opposite_team) == True):
+    if(errorCode.isErrorCode(player_and_opposite_team) == True):
         return player_and_opposite_team #Return error code
     else:
         player_team, opposite_team = player_and_opposite_team   #If it is not an error code it is a tupple
@@ -277,13 +277,13 @@ def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,ta
     #Search for the selected player to get tag. First look in the enemy team
     if(targetTeam != "ally"):
         targetData = _extract_player_data_with_agent_and_team(matchData= matchData, agent= targetAgent, team= opposite_team, jsonVersion= "v3")
-        if(isErrorCode(targetData) == True):
+        if(errorCode.isErrorCode(targetData) == True):
             return targetData #Return error code
     
     #If no one was playing the agent in the enemy team, or ally team was explicitely selected, look in the player's team
     if((targetData == None and targetTeam == None) or (targetTeam == "ally")):
         targetData = _extract_player_data_with_agent_and_team(matchData= matchData, agent= targetAgent, team= player_team, jsonVersion= "v3")
-        if(isErrorCode(targetData) == True):
+        if(errorCode.isErrorCode(targetData) == True):
             return targetData #Return error code
     
     if(targetData == None):
@@ -293,9 +293,9 @@ def get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,ta
         #Get data of the desired player
         target_elo = get_this_season_elo(region= region,name= targetData['name'], tag= targetData['tag'])
         target_HS = get_last_match_HS_percentage(region= region, name= targetData['name'], tag= targetData['tag'])
-        if(isErrorCode(target_elo) == True):
+        if(errorCode.isErrorCode(target_elo) == True):
             return target_elo #Return error code
-        elif(isErrorCode(target_HS) == True):
+        elif(errorCode.isErrorCode(target_HS) == True):
             return target_HS #Return error code
         else:
             result = {'elo': target_elo, 'HS': target_HS, 'name': targetData['name']}
@@ -324,7 +324,7 @@ def get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,t
 
     #Get which team was the player on to start looking on the enemies side
     player_and_opposite_team = _get_player_and_opposite_team(matchData= matchData, name= name, jsonVersion= "v2")
-    if(type(player_and_opposite_team) == str and isErrorCode(player_and_opposite_team) == True):
+    if(type(player_and_opposite_team) == str and errorCode.isErrorCode(player_and_opposite_team) == True):
         return player_and_opposite_team #Return error code
     else:
         player_team, opposite_team = player_and_opposite_team   #If it is not an error code it is a tupple
@@ -336,13 +336,13 @@ def get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,t
     #Search for the selected player to get tag. First look in the enemy team
     if(targetTeam != "ally"):
         targetData = _extract_player_data_with_agent_and_team(matchData= matchData, agent= targetAgent, team= opposite_team, jsonVersion= "v2")
-        if(isErrorCode(targetData) == True):
+        if(errorCode.isErrorCode(targetData) == True):
             return targetData #Return error code
     
     #If no one was playing the agent in the enemy team, or ally team was explicitely selected, look in the player's team
     if((targetData == None and targetTeam == None) or (targetTeam == "ally")):
         targetData = _extract_player_data_with_agent_and_team(matchData= matchData, agent= targetAgent, team= player_team, jsonVersion= "v2")
-        if(isErrorCode(targetData) == True):
+        if(errorCode.isErrorCode(targetData) == True):
             return targetData #Return error code
     
     if(targetData == None):
@@ -353,9 +353,9 @@ def get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,t
         region = matchData['data']['metadata']['region']
         target_elo = get_this_season_elo(region= region,name= targetData['name'], tag= targetData['tag'])
         target_HS = get_last_match_HS_percentage(region= region, name= targetData['name'], tag= targetData['tag'])
-        if(isErrorCode(target_elo) == True):
+        if(errorCode.isErrorCode(target_elo) == True):
             return target_elo #Return error code
-        elif(isErrorCode(target_HS) == True):
+        elif(errorCode.isErrorCode(target_HS) == True):
             return target_HS #Return error code
         else:
             result = {'elo': target_elo, 'HS': target_HS, 'name': targetData['name']}
@@ -486,17 +486,17 @@ def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
         """
     targetStandard = target.capitalize()
     targetType = _get_target_type(target= targetStandard)
-    if(isErrorCode(targetType) == True):
+    if(errorCode.isErrorCode(targetType) == True):
         return targetType
     else:
         #Get liffetime match data
         if(targetType == "map"):
             targetWR = _get_map_wr(region= region,name= name,tag= tag,map= targetStandard)
-            if(isErrorCode(targetWR) == True):
+            if(errorCode.isErrorCode(targetWR) == True):
                 return targetWR #Return error code
         elif(targetType == "agent"):
             targetWR = _get_agent_wr(region= region,name= name,tag= tag,agent= targetStandard)
-            if(isErrorCode(targetWR) == True):
+            if(errorCode.isErrorCode(targetWR) == True):
                 return targetWR #Return error code
         else:
             print(f"{errorCode.ERR_CODE_121} - Target not found in map nor in agent lists")
@@ -632,7 +632,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    handleErrorCode("a"+errorCode.ERR_CODE_112)
+    errorCode.handleErrorCode("a"+errorCode.ERR_CODE_112)
 
 if __name__ == "__main__":
     main()

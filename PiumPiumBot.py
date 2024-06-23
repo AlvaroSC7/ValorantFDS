@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from os.path import dirname, abspath
 from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr, _get_target_type, get_last_match_agent_data
-from PiumPiumBot_ErrorCodes import ErrorCodes, handleErrorCode
+from PiumPiumBot_ErrorCodes import ErrorCodes
 
 def get_bot_token():
     """
@@ -21,7 +21,8 @@ def get_bot_token():
     return token
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='!',intents=intents)
+helper = commands.DefaultHelpCommand(width= 500, no_category = 'Comandos disponibles')
+bot = commands.Bot(command_prefix='!',intents=intents, help_command= helper)
 errorCodeList = ErrorCodes()
 
 ##################################################################
@@ -34,7 +35,6 @@ errorCodeList = ErrorCodes()
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
 #To Do: comando acs last game
-#To Do: comando help. Add it to "Sobre mi" en el bot en Discord Developer.
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !esports !vct !masters
 #To Do: Implement !host to return where the answering bot is running
@@ -43,20 +43,26 @@ errorCodeList = ErrorCodes()
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
 async def get_HS_percentage_deprecate(ctx):
+    """ 
+        Indica el porcentaje de tiros a la cabeza que has tenido en tu ultima partida
+
+        !HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando
+        """
     await get_HS_percentage(ctx)
     response = f"!HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando"
     await ctx.send(response)
 
 @bot.command(name='hs')
 async def get_HS_percentage(ctx):
+    "Indica el porcentaje de tiros a la cabeza que has tenido en tu ultima partida"
     author = ctx.message.author
     player = get_player_data(player=author)
-    errorCode = handleErrorCode(player)
+    errorCode = errorCodeList.handleErrorCode(player)
     if(errorCode != None):
         await ctx.send(errorCode)
     else:
         HS_accuracy = get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
-        errorCode = handleErrorCode(HS_accuracy)
+        errorCode = errorCodeList.handleErrorCode(HS_accuracy)
         if(errorCode != None):
             await ctx.send(errorCode)
         else:
@@ -65,14 +71,15 @@ async def get_HS_percentage(ctx):
 
 @bot.command(name='elo')
 async def get_elo(ctx):
+    "Indica tu elo actual como {Rango} - {Puntuacion total en el sistema de rangos}"
     author = ctx.message.author
     player = get_player_data(player=author)
-    errorCode = handleErrorCode(player)
+    errorCode = errorCodeList.handleErrorCode(player)
     if(errorCode != None):
         response = errorCode
     else:
         elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
-        errorCode = handleErrorCode(elo)
+        errorCode = errorCodeList.handleErrorCode(elo)
         if(errorCode != None):
             response = errorCode
         else:
@@ -82,40 +89,56 @@ async def get_elo(ctx):
 
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='last_game')
-async def get_last_game_player_data_deprecate(ctx,target_player: str= None,target_team: str= None):
+async def get_last_game_player_data_deprecate(ctx,
+                                              target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyos datos quieres saber"), 
+                                              target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
+    """
+        Proporciona el elo y porcentaje de tiro a la cabeza de cualquier jugador de tu ultima partida
+        
+        Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
+        
+        !last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando
+        """
     await get_last_game_player_data(ctx, target_player= target_player, target_team= target_team)
     response = f"!last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando"
     await ctx.send(response)
 
 @bot.command(name='lg')
-async def get_last_game_player_data(ctx,target_player: str= None,target_team: str= None):
+async def get_last_game_player_data(ctx,
+                                    target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyos datos quieres saber"), 
+                                    target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
+    """
+        Proporciona el elo y porcentaje de tiro a la cabeza de cualquier jugador de tu ultima partida
+        
+        Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
+        """
     author = ctx.message.author
     player = get_player_data(player=author)
-    errorCode = handleErrorCode(player)
+    errorCode = errorCodeList.handleErrorCode(player)
     if(errorCode != None):
         response = errorCode
     #Check first given command
     elif(target_player == None):
         print(f"{errorCodeList.ERR_CODE_122} - No target player given")
-        response = handleErrorCode(errorCodeList.ERR_CODE_122)
+        response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_122)
     elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
         print(f"{errorCodeList.ERR_CODE_123} - Wrong team name")
-        response = handleErrorCode(errorCodeList.ERR_CODE_123)
+        response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_123)
     else:
         #Check if target is player name or player character
         target_type = _get_target_type(target= target_player)
-        errorCode = handleErrorCode(target_type)
+        errorCode = errorCodeList.handleErrorCode(target_type)
         if(errorCode != None):
             response = errorCode
         elif(target_type == "map"):
             print(f"{errorCodeList.ERR_CODE_124} - Map selected when agent or player ID was expected")
-            response = handleErrorCode(errorCodeList.ERR_CODE_124)
+            response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_124)
         else:
             #Target type (only type is assured) is valid
             if(target_type == "agent"):
                 #Get elo and HS of the player controlling the selected agent in last player's game
                 targetData = get_last_match_agent_data(region= player['region'], name= player['name'], tag= player['tag'], targetAgent= target_player, targetTeam= target_team)
-                errorCode = handleErrorCode(targetData)
+                errorCode = errorCodeList.handleErrorCode(targetData)
                 if(errorCode != None):
                     response = errorCode
                 else:
@@ -123,7 +146,7 @@ async def get_last_game_player_data(ctx,target_player: str= None,target_team: st
             else:
                 #Get elo and HS of the selected player
                 targetData = get_last_match_player_data(region= player['region'], name= player['name'], tag= player['tag'], targetName= target_player)
-                errorCode = handleErrorCode(targetData)
+                errorCode = errorCodeList.handleErrorCode(targetData)
                 if(errorCode != None):
                     response = errorCode
                 else:
@@ -131,21 +154,26 @@ async def get_last_game_player_data(ctx,target_player: str= None,target_team: st
     await ctx.send(response)
 
 @bot.command(name='wr')
-async def get_wr(ctx,target=None):
+async def get_wr(ctx,target = commands.parameter(default=None, description="nombre del mapa o agente cuyo porcentaje de victorias quieres saber")):
+    """
+        Indica tu porcentaje de victoria con un agente o en un mapa concreto
+
+        Ejemplos: !wr Omen !wr Split
+        """
     #No target selected
     if(target == None):
         print(f"{errorCodeList.ERR_CODE_122} - No target player given")
-        response = handleErrorCode(errorCodeList.ERR_CODE_122)
+        response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_122)
     else:
         #Process the request
         author = ctx.message.author
         player = get_player_data(player=author)
-        errorCode = handleErrorCode(player)
+        errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         else:
             wr = get_target_wr(region= player['region'], name= player['name'], tag= player['tag'], target= target)
-            errorCode = handleErrorCode(wr)
+            errorCode = errorCodeList.handleErrorCode(wr)
             if(errorCode != None):
                 response = errorCode
             else:
@@ -156,14 +184,19 @@ async def get_wr(ctx,target=None):
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='Mariano')
 async def get_mariano_percentage_deprecate(ctx):
+    """
+        Porcentaje de victorias del gran Mariano
+        !Mariano no esta continuado y se eliminará en futuras versiones en favor de !mariano, considera usar ya el nuevo comando
+        """
     await get_mariano_percentage(ctx)
     response = f"!Mariano no esta continuado y se eliminará en futuras versiones en favor de !mariano, considera usar ya el nuevo comando"
     await ctx.send(response)
 
 @bot.command(name='mariano')
 async def get_mariano_percentage(ctx):
+    "Porcentaje de victorias del gran Mariano"
     mariano_win_percentage = get_mariano_lost_percentage()
-    errorCode = handleErrorCode(mariano_win_percentage)
+    errorCode = errorCodeList.handleErrorCode(mariano_win_percentage)
     if(errorCode != None):
         response = errorCode
     else:
