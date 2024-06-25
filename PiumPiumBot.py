@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 from os.path import dirname, abspath
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_last_match_player_data, get_target_wr, _get_target_type, get_last_match_agent_data, get_avg_elo
+import re
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data
 from PiumPiumBot_ErrorCodes import ErrorCodes
 
 def get_bot_token():
@@ -29,7 +30,6 @@ errorCodeList = ErrorCodes()
 #                         COMMANDS                               #
 ##################################################################
 #To Do: comando sens
-#To Do: comando peak elo
 #To Do: comando para setear datos de jugadores
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
@@ -116,40 +116,13 @@ async def get_last_game_player_data(ctx,
     errorCode = errorCodeList.handleErrorCode(player)
     if(errorCode != None):
         response = errorCode
-    #Check first given command
-    elif(target_player == None):
-        print(f"{errorCodeList.ERR_CODE_122} - No target player given")
-        response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_122)
-    elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
-        print(f"{errorCodeList.ERR_CODE_123} - Wrong team name")
-        response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_123)
     else:
-        #Check if target is player name or player character
-        target_type = _get_target_type(target= target_player)
-        errorCode = errorCodeList.handleErrorCode(target_type)
+        lg_response = get_last_match_data(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, target_team= target_team)
+        errorCode = errorCodeList.handleErrorCode(lg_response)
         if(errorCode != None):
             response = errorCode
-        elif(target_type == "map"):
-            print(f"{errorCodeList.ERR_CODE_124} - Map selected when agent or player ID was expected")
-            response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_124)
         else:
-            #Target type (only type is assured) is valid
-            if(target_type == "agent"):
-                #Get elo and HS of the player controlling the selected agent in last player's game
-                targetData = get_last_match_agent_data(region= player['region'], name= player['name'], tag= player['tag'], targetAgent= target_player, targetTeam= target_team)
-                errorCode = errorCodeList.handleErrorCode(targetData)
-                if(errorCode != None):
-                    response = errorCode
-                else:
-                    response = f"{targetData['name']}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
-            else:
-                #Get elo and HS of the selected player
-                targetData = get_last_match_player_data(region= player['region'], name= player['name'], tag= player['tag'], targetName= target_player)
-                errorCode = errorCodeList.handleErrorCode(targetData)
-                if(errorCode != None):
-                    response = errorCode
-                else:
-                    response = f"{target_player}" + f"\n\t{targetData['elo']}" + f"\n\tPorcentaje de headshot: {targetData['HS']}%"
+            response = lg_response
     await ctx.send(response)
 
 @bot.command(name='wr')
@@ -197,6 +170,29 @@ async def get_average_elo(ctx):
         else:
             response = avg_elo
     
+    await ctx.send(response)
+
+@bot.command(name='peak')
+async def peak(ctx,
+                    target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyo maximo elo quieres saber"), 
+                    target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
+    """
+        Proporciona el elo maximo que ha alcanzado cualquier jugador de tu ultima partida
+        
+        Ejemplos: !peak IMissHer !peak Sova enemy !peak Jett"
+        """
+    author = ctx.message.author
+    player = get_player_data(player=author)
+    errorCode = errorCodeList.handleErrorCode(player)
+    if(errorCode != None):
+        response = errorCode
+    #Check first given command
+    peakElo = peak_elo(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, targetTeam= target_team)
+    errorCode = errorCodeList.handleErrorCode(peakElo)
+    if(errorCode != None):
+        response = errorCode
+    else:
+        response = peakElo
     await ctx.send(response)
 
 #To Do: borrar esta funcion cuando ya nadie la use
