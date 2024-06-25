@@ -134,7 +134,6 @@ async def get_wr(ctx,target = commands.parameter(default=None, description="nomb
         """
     #No target selected
     if(target == None):
-        print(f"{errorCodeList.ERR_CODE_122} - No target player given")
         response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_122)
     else:
         #Process the request

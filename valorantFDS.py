@@ -37,11 +37,11 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
 
     #Check if player has changed its name
     if(matchData['status'] != 200):
-        print(f"{errorCode.ERR_CODE_100} - API returned error code {matchData['status']}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
         return errorCode.ERR_CODE_100
     
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
     else:
         headshots = matchData['data'][0]['stats']['shots']['head']
@@ -61,16 +61,13 @@ def get_last_match_data(region: str,name: str,tag: str,target_player: str, targe
         """
     #Check first given command
     if(target_player == None):
-        print(f"{errorCode.ERR_CODE_122} - No target player given")
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_122)
     elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
-        print(f"{errorCode.ERR_CODE_123} - Wrong team name")
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_123)
     else:
         #Check if target is player name or player character
         target_type = _get_target_type(target= target_player)
         if(target_type == "map"):
-            print(f"{errorCode.ERR_CODE_124} - Map selected when agent or player ID was expected")
             response = errorCode.handleErrorCode(errorCode.ERR_CODE_124)
         elif(target_type == "agent"):
             #Get elo and HS of the player controlling the selected agent in last player's game
@@ -122,7 +119,7 @@ def get_player_data(player: str) -> dict:
     elif(user == laura_discord):
         return laura
     else:
-        print(f"{errorCode.ERR_CODE_120} - Wrong discord user name")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_120)
         return errorCode.ERR_CODE_120
 
 def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
@@ -152,7 +149,7 @@ def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
             if(errorCode.isErrorCode(targetWR) == True):
                 return targetWR #Return error code
         else:
-            print(f"{errorCode.ERR_CODE_121} - Target not found in map nor in agent lists")
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_121)
             return errorCode.ERR_CODE_121
 
         return targetWR
@@ -187,8 +184,8 @@ def get_mariano_lost_percentage() -> float:
             mariano_lost = mariano_lost + 1
     #Calculate loose percentage
     if(mariano_lost + mariano_won == 0):
-       print(f"{errorCode.ERR_CODE_107} - Mariano played no matches")
-       return errorCode.ERR_CODE_107
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_102)
+       return errorCode.ERR_CODE_102
     mariano_lost_percentage = (mariano_lost/(mariano_lost + mariano_won)) * 100
     return round(mariano_lost_percentage,2)
 
@@ -235,7 +232,7 @@ def get_avg_elo(region: str,name: str,tag: str) -> str:
     
     #Search for the selected player to get tag
     if(len(matchData['data']) == 0):
-        print(f"{errorCode.ERR_CODE_101} - No recent game found for the user")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
         return errorCode.ERR_CODE_101   #Only error for this function is no matches found for the user
 
     lastGame = matchData['data'][0]
@@ -275,16 +272,13 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
         """
     #Check first given command
     if(target_player == None):
-        print(f"{errorCode.ERR_CODE_122} - No target player given")
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_122)
     elif(targetTeam != None and targetTeam.lower() != "enemy" and targetTeam.lower() != "ally"):
-        print(f"{errorCode.ERR_CODE_123} - Wrong team name")
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_123)
     else:
         #Check if target is player name or player character
         target_type = _get_target_type(target= target_player)
         if(target_type == "map"):
-            print(f"{errorCode.ERR_CODE_124} - Map selected when agent or player ID was expected")
             response = errorCode.handleErrorCode(errorCode.ERR_CODE_124)
         elif(target_type == "agent"):
             #Get elo and HS of the player controlling the selected agent in last player's game
@@ -369,13 +363,13 @@ def _get_player_and_opposite_team(matchData: json,name: str, jsonVersion: str) -
         #Extract the team of the player depending on json version
         if(jsonVersion.lower() == "v3"):
             if(len(matchData['data']) == 0):
-                print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+                errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
                 return errorCode.ERR_CODE_101
             gameData = matchData['data'][0]['players']['all_players']
         elif(jsonVersion.lower() == "v2"):
             gameData = matchData['data']['players']['all_players']
         else:
-            print(f"{errorCode.ERR_CODE_110} - Requested JSON version is not valid")
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_110)
             return errorCode.ERR_CODE_110
         
         for player in gameData:
@@ -405,13 +399,13 @@ def _extract_player_data_with_agent_and_team(matchData: json,agent: str, team: s
         """
         if(jsonVersion.lower() == "v3"):
             if(len(matchData['data']) == 0):
-                print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+                errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
                 return errorCode.ERR_CODE_101
             gameData = matchData['data'][0]['players'][team]
         elif(jsonVersion.lower() == "v2"):
             gameData = matchData['data']['players'][team]
         else:
-            print(f"{errorCode.ERR_CODE_110} - Requested JSON version is not valid")
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_110)
             return errorCode.ERR_CODE_110
         targetFound = False
         #Search for the selected player to get tag. First look in the enemy team
@@ -461,7 +455,7 @@ def _get_agent_wr(region: str,name: str,tag: str, agent: str) -> float:
     
     #Calculate win percentage in that map
     if(wonMatches + lostMatches == 0):
-       print(f"{errorCode.ERR_CODE_106} - No matches with the selected agent")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_106)
        return errorCode.ERR_CODE_106
     agent_wr = (wonMatches/(wonMatches + lostMatches)) * 100
     return round(agent_wr,2)
@@ -501,7 +495,7 @@ def _get_map_wr(region: str,name: str,tag: str, map: str) -> float:
     
     #Calculate win percentage in that map
     if(wonMatches + lostMatches == 0):
-       print(f"{errorCode.ERR_CODE_105} - No matches in the selected map")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_105)
        return errorCode.ERR_CODE_105
     map_wr = (wonMatches/(wonMatches + lostMatches)) * 100
     return round(map_wr,2)
@@ -521,7 +515,7 @@ def _get_level(region: str,name: str,tag: str) -> int:
     levelData = level_request.json()
     _save_json(levelData,jsonName= "_get_level")
     if(len(levelData['data']) == 0):
-        print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
         return errorCode.ERR_CODE_101
     level = levelData['data'][0]['stats']['level']
     
@@ -547,8 +541,8 @@ def _get_elo(region: str,name: str,tag: str) -> tuple:
 
     #Check if player has changed its name
     if(eloData['status'] != 200):   #To Do: add this check to every API call
-        print(f"{errorCode.ERR_CODE_104} - API returned error code {eloData['status']}")
-        return errorCode.ERR_CODE_104
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+        return errorCode.ERR_CODE_100
 
     #Player has a competitive rank
     if(eloData['data']['currenttierpatched'] != None and eloData['data']['elo'] != None):
@@ -592,7 +586,7 @@ def _get_last_match_ID(region: str,name: str,tag: str) -> str:
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "_get_last_match_ID")
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return None
     else:
         game_id = matchData['data'][0]['meta']['id']
@@ -618,11 +612,11 @@ def _get_puuid(region: str,name: str,tag: str) -> str:
 
     #Check if player has changed its name
     if(matchData['status'] != 200):
-        print(f"{errorCode.ERR_CODE_100} - API returned error code {matchData['status']}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
         return errorCode.ERR_CODE_100
     
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No recent games found for the user")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
     else:
         return matchData['data'][0]['stats']['puuid']
@@ -645,7 +639,7 @@ def _get_last_match_agent_peak_elo_old_game(name: str, gameId: str,targetAgent: 
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "_get_last_match_agent_peak_elo_old_game")
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No recent games found for the user, even using v2 API")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
 
     #Get which team was the player on to start looking on the enemies side
@@ -672,7 +666,7 @@ def _get_last_match_agent_peak_elo_old_game(name: str, gameId: str,targetAgent: 
             return targetData #Return error code
     
     if(targetData == None):
-        print(f"{errorCode.ERR_CODE_103} - No player was using {targetAgent} in the last game of {name}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_103)
         return errorCode.ERR_CODE_103
     else:
         #Get data of the desired player
@@ -698,7 +692,7 @@ def get_player_tag_v3(matchData, name: str) -> str:
         if(str(player['name']) == name):
             return str(player['tag'])
     #If code is here no player with the selected name was found
-    print(f"{errorCode.ERR_CODE_102} - Player not found in last game")
+    errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_102)
     return errorCode.ERR_CODE_102
 
 def _get_peak_elo(region: str,name: str,tag: str) -> tuple:
@@ -722,7 +716,8 @@ def _get_peak_elo(region: str,name: str,tag: str) -> tuple:
 
     #Check if player has changed its name
     if(eloData['status'] != 200):
-        print(f"{errorCode.ERR_CODE_100} - API returned error code {eloData['status']}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+        return errorCode.ERR_CODE_100
     else:
         highestRank = eloData['data']['highest_rank']['patched_tier']
         highestRankDate = eloData['data']['highest_rank']['season']
@@ -750,6 +745,7 @@ def _get_last_match_agent_peak_elo(region: str,name: str,tag: str,targetAgent: s
     if(len(matchData['data']) == 0):    #If there are no matches try another version of the API that allows older games
         gameId = _get_last_match_ID(region=region,name=name,tag=tag)
         if(gameId == None):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
             return errorCode.ERR_CODE_101   #Only error for this function is no matches found for the user
         else:
             return _get_last_match_agent_peak_elo_old_game(name= name, gameId= gameId, targetAgent= targetAgent, targetTeam= targetTeam)   #GameID v2 API support older games.
@@ -778,7 +774,7 @@ def _get_last_match_agent_peak_elo(region: str,name: str,tag: str,targetAgent: s
             return targetData #Return error code
     
     if(targetData == None):
-        print(f"{errorCode.ERR_CODE_103} - No player was using {targetAgent} in the last game of {name} #{tag}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_103)
         return errorCode.ERR_CODE_103
     else:
         #Get data of the desired player
@@ -809,6 +805,7 @@ def _get_last_match_user_peak_elo(region: str,name: str,tag: str, targetName: st
     if(len(matchData['data']) == 0):    #If there are no matches try another version of the API that allows older games
         gameId = _get_last_match_ID(region=region,name=name,tag=tag)
         if(gameId == None):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
             return errorCode.ERR_CODE_101   #Only error for this function is no matches found for the user
         else:
             return _get_last_match_agent_peak_elo_old_game(name= name, gameId= gameId, targetAgent= targetAgent, targetTeam= targetTeam)   #GameID v2 API support older games.
@@ -876,7 +873,7 @@ def _get_last_match_agent_data(region: str,name: str,tag: str,targetAgent: str,t
             return targetData #Return error code
     
     if(targetData == None):
-        print(f"{errorCode.ERR_CODE_103} - No player was using {targetAgent} in the last game of {name} #{tag}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_103)
         return errorCode.ERR_CODE_103
     else:
         #Get data of the desired player
@@ -951,7 +948,7 @@ def _get_last_match_player_data_old_game(gameId: str, targetName: str) -> dict:
     playerFound = False
     #Search for the selected player to get tag
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No games found even with v2 gameID API")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
     for player in matchData['data']['players']['all_players']:
         if(str(player['name']) == targetName):
@@ -961,8 +958,8 @@ def _get_last_match_player_data_old_game(gameId: str, targetName: str) -> dict:
             break
     
     if(playerFound == False):
-        print(f"{errorCode.ERR_CODE_102} - Player not found in last game, even using v2 API")
-        return errorCode.ERR_CODE_102
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_107)
+        return errorCode.ERR_CODE_107
     else:
         #Get data of the desired player
         region = matchData['data']['metadata']['region']
@@ -994,7 +991,7 @@ def _get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "_get_last_match_agent_data_old_game")
     if(len(matchData['data']) == 0):
-       print(f"{errorCode.ERR_CODE_101} - No recent games found for the user, even using v2 API")
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
 
     #Get which team was the player on to start looking on the enemies side
@@ -1021,7 +1018,7 @@ def _get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,
             return targetData #Return error code
     
     if(targetData == None):
-        print(f"{errorCode.ERR_CODE_103} - No player was using {targetAgent} in the last game of {name}")
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_103)
         return errorCode.ERR_CODE_103
     else:
         #Get data of the desired player
