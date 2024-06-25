@@ -35,7 +35,6 @@ config = PiumPiumBot_Config()
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !esports !vct !masters
-#To Do: Implement !host to return where the answering bot is running
 
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
@@ -220,6 +219,11 @@ async def get_version(ctx):
     response = f"{config.version}-{config.type[0]}"
     await ctx.send(response)
 
+@bot.command(name='host')
+async def get_version(ctx):
+    "Informacion del host y servidor donde PiumPiumBot está alojado actualmente"
+    response = f"URL: {config.host.url}\nID: {config.host.id}\nNode: {config.host.node}"
+    await ctx.send(response)
 
 
 def main():

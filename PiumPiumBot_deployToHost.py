@@ -1,8 +1,8 @@
 from PiumPiumBot_Config import PiumPiumBot_Config
 import re
-from os.path import dirname, abspath
 import os
 import zipfile
+import json
 
 bot = PiumPiumBot_Config()
 
@@ -10,13 +10,13 @@ bot = PiumPiumBot_Config()
 #To Do: Implement function to delete #To Do comments from PROD
 #To Do: Implement function to delete main from valorantFDS.py since it is only used for testing purposes
 #To Do: Create zips for the different hosts with a new attribute on the config file
-def update_version(versionToIncrease: str, ws_path: str) -> str:
+
+def update_version(versionToIncrease: str) -> str:
     """
         Increase the selected version (major|minor|patch) of the PiumPiumBot and set version type to PROD.
 
         Parameters:
             versionToIncrease   (str):  Version type to be increased (major|minor|patch)
-            ws_path             (str):  Workspace path
         Returns:
             versionToZip        (str):  New updated version with the same format
         """
@@ -33,7 +33,7 @@ def update_version(versionToIncrease: str, ws_path: str) -> str:
     version[versionToIncrease] = str(int(version[versionToIncrease]) + 1)
     newVersion = "version = '" + version['major'] + "." + version['minor'] + "." + version['patch'] + "'"
     #Get python data to parse
-    version_path = ws_path + "/PiumPiumBot_Config.py"
+    version_path = bot.WS_PATH + "/PiumPiumBot_Config.py"
     with open (version_path,"r") as f:
         data = f.read()
         newData = re.sub("version = *.*.*", newVersion, data)   #New version
@@ -46,30 +46,51 @@ def update_version(versionToIncrease: str, ws_path: str) -> str:
     versionToZip = re.sub("version = |'","",newVersion)
     return versionToZip
 
-def create_zip(zipfile, ws_path: str):
-    excludeListFile = open(ws_path + "/excludePROD.txt","r")
+def create_zip(zipfile):
+    excludeListFile = open(bot.WS_PATH + "/excludePROD.txt","r")
     excludeList = excludeListFile.read()
 
     #Check all the files and folders in the folder
-    for file in os.listdir(ws_path):
+    for file in os.listdir(bot.WS_PATH):
         #Get only files
-        if(os.path.isfile(ws_path + "/" + file) == True):
+        if(os.path.isfile(bot.WS_PATH + "/" + file) == True):
             #Get only files needed for PROD
             if(file not in excludeList):
-                zipfile.write(ws_path + "/" + file, file)
+                zipfile.write(bot.WS_PATH + "/" + file, file)
+
+def update_host(host):
+    """
+        Modify the configuration file writing the host information for each zip file.
+
+        Parameters:
+            host   (str):  Information of the host
+        """
+    config_path = bot.WS_PATH + "/PiumPiumBot_Config.py"
+    with open (config_path,"r") as f:
+        data = f.read()
+        for attrib in host:
+            data = re.sub(f"(?<={attrib}= ')(.*?)(?=')", host[attrib], data)   #New version
+    #Overwrite new version
+    with open (config_path,"w") as f:
+        f.write(data)
+        f.truncate()
 
 
 def main():
-    ws_path = dirname(abspath(__file__))
     old_version = bot.version
-    new_version = update_version("patch", ws_path)
-    oldZipVersion = f"{ws_path}/host/PiumPiumBot_v{old_version}.zip"
+    new_version = update_version("patch")
+    #Open host list
+    with open(bot.PRIVATE_PATH + '/hostList.json') as json_file:
+        hostList = json.load(json_file)
 
-    with zipfile.ZipFile(f"{ws_path}/host/PiumPiumBot_v{new_version}.zip",'w',zipfile.ZIP_DEFLATED) as zipf:
-        create_zip(zipf, ws_path)
-    #Remove the old PROD version
-    if(os.path.isfile(oldZipVersion)):
-        os.remove(oldZipVersion)
+    for host in hostList['host']: 
+        oldZipVersion = f"{bot.HOST_PATH}/PiumPiumBot_v{old_version}_{host['id']}.zip"
+        update_host(host= host)
+        with zipfile.ZipFile(f"{bot.HOST_PATH}/PiumPiumBot_v{new_version}_{host['id']}.zip",'w',zipfile.ZIP_DEFLATED) as zipf:
+            create_zip(zipf)
+        #Remove the old PROD version
+        if(os.path.isfile(oldZipVersion)):
+            os.remove(oldZipVersion)
 
 if __name__ == "__main__":
     main()
