@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from os.path import dirname, abspath
-import re
 from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data
 from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_Config import PiumPiumBot_Config
 
 def get_bot_token():
     """
@@ -25,6 +25,7 @@ intents = discord.Intents.all()
 helper = commands.DefaultHelpCommand(width= 500, no_category = 'Comandos disponibles')
 bot = commands.Bot(command_prefix='!',intents=intents, help_command= helper)
 errorCodeList = ErrorCodes()
+config = PiumPiumBot_Config()
 
 ##################################################################
 #                         COMMANDS                               #
@@ -37,7 +38,6 @@ errorCodeList = ErrorCodes()
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !esports !vct !masters
 #To Do: Implement !host to return where the answering bot is running
-#To Do: Implement !version to show the whole version info (version, prod/dev, host)
 
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
@@ -214,6 +214,12 @@ async def get_mariano_percentage(ctx):
         response = errorCode
     else:
         response = f"Mariano ha perdido el {mariano_win_percentage}% de las partidas que ha jugado. Que barbaridad"
+    await ctx.send(response)
+
+@bot.command(name='version')
+async def get_version(ctx):
+    "Version de PiumPiumBot que se esta ejecutando"
+    response = f"{config.version}-{config.type[0]}"
     await ctx.send(response)
 
 
