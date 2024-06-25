@@ -98,7 +98,6 @@ def get_player_data(player: str) -> dict:
         """
     #To Do: Implement this in private json for privacy reasons
     #To Do: Add puuid to the dictionary for every player once it is stored in Json so puuid is only looked once. Improves performance
-    #To Do: Move tokens to a folder private/
     alvaro = {'region': 'eu', 'name': 'SpaguettiCoded', 'tag': "EUW"}
     dani = {'region': 'eu', 'name': 'Barl0ck', 'tag': "0205"}
     ana = {'region': 'eu', 'name': 'shadowdanna', 'tag': "81502"}
