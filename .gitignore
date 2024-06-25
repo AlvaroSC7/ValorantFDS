@@ -1,7 +1,6 @@
 # Txts excluded as they are often tokens
 
-PiumPiumToken.txt
-ValorantAPIKey.txt
 temp/*
 __pycache__/
 /host
+/private

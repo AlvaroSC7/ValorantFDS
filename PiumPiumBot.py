@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from os.path import dirname, abspath
 from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data
 from PiumPiumBot_ErrorCodes import ErrorCodes
 from PiumPiumBot_Config import PiumPiumBot_Config
@@ -15,8 +14,7 @@ def get_bot_token():
     Returns:
         Response: Bot token.
     """
-    ws_path = dirname(abspath(__file__))
-    path = ws_path + "/PiumPiumToken.txt"
+    path = config.PRIVATE_PATH + "/PiumPiumToken.txt"
     tokenFile = open(path,"r")
     token = tokenFile.read()
     return token
