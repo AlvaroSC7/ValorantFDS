@@ -126,7 +126,7 @@ class ErrorCodes:
         elif(errorCode == self.ERR_CODE_123):
             result = "Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados. Si querias poner un nombre con espacios usa \" \". Ejemplo: !last_game \"Un nombre\""
         elif(errorCode == self.ERR_CODE_124):
-            result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna"
+            result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !peak Reyna"
         elif(errorCode == self.ERR_CODE_125):
             result = "Has seleccionado un comando incorrecto. Para conocer la lista de comandos disponibles usa !help"
         else:

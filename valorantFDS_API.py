@@ -81,6 +81,22 @@ class ValorantFDS_API:
 
         url = self.general_url + f"v1/mmr/{region}/{name}/{tag}"
         return self._send_request(url)
+    
+    def get_by_puuid_mmr_v2(self,region: str, puuid: str, season: str= None):
+        """
+        Get player elo in every season using puuid as input
+
+        Parameters:
+            region  (str):  The Valorant region.
+            puuid   (str):  The player puuid.
+            season  (str):  Season where to look the elo. Optional.
+        Returns:
+            Response: The player elo in every season or in the one selected
+        """
+
+        url = self.general_url + f"v2/by-puuid/mmr/{region}/{puuid}"
+        params = {'season': season}
+        return self._send_request(url, params= params)
 
     def _get_api_key(self):
         """
