@@ -1,5 +1,5 @@
 import requests
-from os.path import dirname, abspath
+from PiumPiumBot_Config import PiumPiumBot_Config
 
 class ValorantFDS_API:
     def __init__(self):
@@ -108,8 +108,8 @@ class ValorantFDS_API:
         Returns:
             Response: API Key.
         """
-        ws_path = dirname(abspath(__file__))
-        path = ws_path + "/ValorantAPIKey.txt"
+        config = PiumPiumBot_Config()
+        path = config.PRIVATE_PATH + "/ValorantAPIKey.txt"
         apiKeyFile = open(path,"r")
         apiKey = apiKeyFile.read()
         return apiKey
