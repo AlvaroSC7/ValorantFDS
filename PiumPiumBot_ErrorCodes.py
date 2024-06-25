@@ -7,11 +7,11 @@ class ErrorCodes:
         self.ERR_CODE_101 = "ERR_CODE_101"  #No recent matches found for the user
         self.ERR_CODE_102 = "ERR_CODE_102"  #Player not found in last game
         self.ERR_CODE_103 = "ERR_CODE_103"  #No player found using the target agent in the last user game
-        self.ERR_CODE_104 = "ERR_CODE_104"  #API returned HTTP error
+        self.ERR_CODE_104 = "ERR_CODE_104"  
         self.ERR_CODE_105 = "ERR_CODE_105"  #No recent matches found for the user in the selected map
         self.ERR_CODE_106 = "ERR_CODE_106"  #No recent matches found for the user with the selected agent
-        self.ERR_CODE_107 = "ERR_CODE_107"  #No recent matches found for Mariano xd
-        self.ERR_CODE_108 = "ERR_CODE_108"
+        self.ERR_CODE_107 = "ERR_CODE_107"  #No recent games found, even using v2 API
+        self.ERR_CODE_108 = "ERR_CODE_108"  
         self.ERR_CODE_109 = "ERR_CODE_109"
         #Internal errors
         self.ERR_CODE_110 = "ERR_CODE_110"  #Wrong Json version used in internal function. ie, v2 API Json used in v3 function
@@ -30,7 +30,7 @@ class ErrorCodes:
         self.ERR_CODE_122 = "ERR_CODE_122"  #No input parameter given. No map or agent selected for a command that required it
         self.ERR_CODE_123 = "ERR_CODE_123"  #Wrong team name
         self.ERR_CODE_124 = "ERR_CODE_124"  #Map selected when agent or player name was expected
-        self.ERR_CODE_125 = "ERR_CODE_125"  #Wrong command selected
+        self.ERR_CODE_125 = "ERR_CODE_125"
         self.ERR_CODE_126 = "ERR_CODE_126"
         self.ERR_CODE_127 = "ERR_CODE_127"
         self.ERR_CODE_128 = "ERR_CODE_128"
@@ -57,12 +57,13 @@ class ErrorCodes:
             else:
                 return False
 
-    def handleErrorCode(self, errorCode: str) -> str:
+    def handleErrorCode(self, errorCode: str, httpError: str= None) -> str:
         """
             This function checks the response of any valorantFDS function and converts any error code into it's meaning so bot user can understand it.
 
             Parameters:
                 errorCode   (str):  value returned by the valorantFDS function
+                httpError   (str):  HTTP error if it needs to be printed. OPTIONAL, just for some error codes
             Returns:
                 Response: Meaning of the error code, to be understood by the Discord user. None if there is no error
             """
@@ -87,24 +88,29 @@ class ErrorCodes:
             result = self._errorUnknownError()
         return result
 
-    #To Do: do here the print with the error ID in english so code is cleaner
-    def _errorGroupNoDataAPI(self, errorCode: str) ->str:
+    def _errorGroupNoDataAPI(self, errorCode: str, httpError: str= None) ->str:
         if(errorCode == self.ERR_CODE_100):
             result = "El jugador ha cambiado su nombre o tag desde tu última partida con el"
+            print(f"{self.ERR_CODE_100} - API returned error code {httpError}")
         elif(errorCode == self.ERR_CODE_101):
             result = "No se han encontrado partidas recientes"
+            print(f"{self.ERR_CODE_101} - No recent games found for the user")
         elif(errorCode == self.ERR_CODE_102):
             result = "No se ha encontrado al jugador objetivo en tu anterior partida"
+            print(f"{self.ERR_CODE_102} - Player not found in last game")
         elif(errorCode == self.ERR_CODE_103):
             result = "No se ha encontrado ningun jugador usando el agente objetivo en tu ultima partida"
-        elif(errorCode == self.ERR_CODE_104):
-            result = "La API de Valorant ha devuelto un error HTTP. Probablemente haya un error en los servidores de RIOT o se haya enviado una peticion erronea"
+            print(f"{self.ERR_CODE_103} - No player was using the selected agent in the user's last game")
+
         elif(errorCode == self.ERR_CODE_105):
             result = "No hay registradas partidas recientes en el mapa seleccionado"
+            print(f"{self.ERR_CODE_105} - No matches in the selected map")
         elif(errorCode == self.ERR_CODE_106):
             result = "No hay registradas partidas recientes con el agente seleccionado"
+            print(f"{self.ERR_CODE_106} - No matches with the selected agent")
         elif(errorCode == self.ERR_CODE_107):
-            result = "No hay registradas partidas recientes de Mariano"
+            result = "No se han encontrado partidas recientes, incluso buscando en los datos mas antiguos"
+            print(f"{self.ERR_CODE_107} - Player not found in last game, even using v2 API")
         else:
             result = self._errorUnknownError()
         return result
@@ -112,6 +118,7 @@ class ErrorCodes:
     def _errorGroupInternal(self, errorCode: str) ->str:
         if(errorCode == self.ERR_CODE_110):
             result = "Error interno, version de Json file erronea"
+            print(f"{self.ERR_CODE_110} - Requested JSON version is not valid")
         else:
             result = self._errorUnknownError()
         return result
@@ -119,16 +126,19 @@ class ErrorCodes:
     def _errorGroupDiscord(self, errorCode: str) ->str:
         if(errorCode == self.ERR_CODE_120):
             result = "Este usuario de Discord no tiene datos de Valorant registrados"
+            print(f"{self.ERR_CODE_120} - Wrong discord user name")
         elif(errorCode == self.ERR_CODE_121):
             result = "No se ha reconocido el agente o mapa especificado"
+            print(f"{self.ERR_CODE_121} - Target not found in map nor in agent lists")
         elif(errorCode == self.ERR_CODE_122):
             result = "Faltan parametros de entrada para el comando. Ejemplo: !last_game shadowdanna | !last_game Reyna | !wr Abyss"
+            print(f"{self.ERR_CODE_122} - No target player given")
         elif(errorCode == self.ERR_CODE_123):
             result = "Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados. Si querias poner un nombre con espacios usa \" \". Ejemplo: !last_game \"Un nombre\""
+            print(f"{self.ERR_CODE_123} - Wrong team name")
         elif(errorCode == self.ERR_CODE_124):
-            result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !last_game Reyna"
-        elif(errorCode == self.ERR_CODE_125):
-            result = "Has seleccionado un comando incorrecto. Para conocer la lista de comandos disponibles usa !help"
+            result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !peak Reyna"
+            print(f"{self.ERR_CODE_124} - Map selected when agent or player ID was expected")
         else:
             result = self._errorUnknownError()
         return result
