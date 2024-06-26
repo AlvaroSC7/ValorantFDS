@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data, get_vct
 from PiumPiumBot_ErrorCodes import ErrorCodes
 from PiumPiumBot_Config import PiumPiumBot_Config
 
@@ -34,7 +34,8 @@ config = PiumPiumBot_Config()
 #To Do: comando sonido ace
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
-#To Do: Implement !esports !vct !masters
+#To Do: Implement !champions when format is known
+#To Do: Implement commands in different cattegories: Configuration, General, Esports
 
 #To Do: borrar esta funcion cuando ya nadie la use
 @bot.command(name='HS')
@@ -223,6 +224,48 @@ async def get_version(ctx):
 async def get_version(ctx):
     "Informacion del host y servidor donde PiumPiumBot está alojado actualmente"
     response = f"URL: {config.host.url}\nID: {config.host.id}\nNode: {config.host.node}"
+    await ctx.send(response)
+
+@bot.command(name='emea')
+async def get_emea(ctx):
+    "Informacion de la VCT EMEA. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_emea")
+    await ctx.send(response)
+
+@bot.command(name='na')
+async def get_na(ctx):
+    "Informacion de la VCT Americas. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_americas")
+    await ctx.send(response)
+
+@bot.command(name='koi')
+async def get_koi(ctx):
+    "Informacion de KOI. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_emea", "KOI")
+    await ctx.send(response)
+
+@bot.command(name='th')
+async def get_koi(ctx):
+    "Informacion de Heretics. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_emea", "TH")
+    await ctx.send(response)
+
+@bot.command(name='gx')
+async def get_koi(ctx):
+    "Informacion de GiantX. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_emea", "GX")
+    await ctx.send(response)
+
+@bot.command(name='nrg')
+async def get_koi(ctx):
+    "Informacion de NRG. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_americas", "NRG")
+    await ctx.send(response)
+
+@bot.command(name='sen')
+async def get_koi(ctx):
+    "Informacion de Sentinels. Resultados de los partidos disputados y calendario proximo"
+    response = get_vct("vct_americas", "SEN")
     await ctx.send(response)
 
 

@@ -301,6 +301,60 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
                 response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
     return response
 
+def get_vct(competition: str, team: str= None) -> str:
+    """
+        Get next VCT upcoming matches information.
+
+        Parameters:
+            competition (str):  Name of the competition which information is going to be extracted
+            team        (str):  If this parameter is provided, only this team information will be given as answer. If it is skipped, all league information is given
+        Returns:
+            Response: String with EMEA matches information
+        """
+    #Check if team and competition are valid
+    availableCompetitions = ["vct_americas", "challengers_na", "game_changers_na", "vct_emea", "vct_pacific", "challengers_br", "challengers_jpn", "challengers_kr", "challengers_latam", "challengers_latam_n", "challengers_latam_s", "challengers_apac", "challengers_sea_id", "challengers_sea_ph", "challengers_sea_sg_and_my", "challengers_sea_th", "challengers_sea_hk_and_tw", "challengers_sea_vn", "valorant_oceania_tour", "challengers_south_asia", "game_changers_sea", "game_changers_series_brazil", "game_changers_east_asia", "game_changers_emea", "game_changers_jpn", "game_changers_kr", "game_changers_latam", "game_changers_championship", "masters", "last_chance_qualifier_apac", "last_chance_qualifier_east_asia", "last_chance_qualifier_emea", "last_chance_qualifier_na", "last_chance_qualifier_br_and_latam", "vct_lock_in", "champions", "vrl_spain", "vrl_northern_europe", "vrl_dach", "vrl_france", "vrl_east", "vrl_turkey", "vrl_cis", "mena_resilence", "challengers_italy", "challengers_portugal"]
+    teams_emea = ["FUT","TH", "FNC", "NAVI", "KC", "VIT", "TL", "BBL", "M8", "KOI", "GX"]
+    teams_na = ["LEV","KRU", "C9", "SEN", "G2", "100T", "EG", "NRG", "LOUD", "FURIA", "MIBR"]
+    for comp in availableCompetitions:
+        available_teams = {comp: []}
+    available_teams['vct_emea'] = teams_emea
+    available_teams['vct_americas'] = teams_na
+    #Check if competition is known
+    if(competition not in availableCompetitions):
+        return errorCode.handleErrorCode(errorCode.ERR_CODE_111)
+    #Check if team (if any) is known
+    elif(team != None and team not in available_teams[competition]):
+        return errorCode.handleErrorCode(errorCode.ERR_CODE_112)
+    #Extract games data
+    else:
+        #Get last match data
+        esport_request = api.get_esports_schedule(league= competition)
+        #Parse data
+        esportData = esport_request.json()
+        _save_json(esportData,jsonName= "get_vct")
+
+        #Check if player has changed its name
+        if(esportData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esportData['status'])
+            return errorCode.ERR_CODE_100
+
+        if(len(esportData['data']) == 0):
+           errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
+           return errorCode.ERR_CODE_101
+        else:
+            result = ""
+            for game in esportData['data']:
+                if(team == None or game['match']['teams'][0]['code'] == team or game['match']['teams'][1]['code'] == team): 
+                    #All teams requested or exactly a match of the requested team
+                    if(game['state'] == "completed"):
+                        result = result + f"{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"
+                    else:
+                        result = result + game['match']['teams'][0]['name'] + " - " +  game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"
+            #Check if there is any data of the selected team or competition
+            if(result == ""):
+                result = errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_104)
+            return result
+
 ##################################################################
 #                         INTERNAL FUNCTIONS                     #
 ##################################################################
@@ -802,12 +856,7 @@ def _get_last_match_user_peak_elo(region: str,name: str,tag: str, targetName: st
     matchData = matches_request.json()
     _save_json(matchData,jsonName= "_get_last_match_user_peak_elo")
     if(len(matchData['data']) == 0):    #If there are no matches try another version of the API that allows older games
-        gameId = _get_last_match_ID(region=region,name=name,tag=tag)
-        if(gameId == None):
-            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
-            return errorCode.ERR_CODE_101   #Only error for this function is no matches found for the user
-        else:
-            return _get_last_match_agent_peak_elo_old_game(name= name, gameId= gameId, targetAgent= targetAgent, targetTeam= targetTeam)   #GameID v2 API support older games.
+        errorCode.ERR_CODE_101   #Only error for this function is no matches found for the user
     
     #Get tag of the target user
     targetTag = get_player_tag_v3(matchData= matchData, name= targetName)
@@ -1031,13 +1080,30 @@ def _get_last_match_agent_data_old_game(name: str, gameId: str,targetAgent: str,
         else:
             result = {'elo': target_elo, 'HS': target_HS, 'name': targetData['name']}
             return result
+        
+def _translate_date(date: str) -> str:
+    """
+        Translate the date provided by the API calls to a more readable approach
+
+        Parameters:
+            date    (str):  Date as it is returned by the API calls
+        Returns:
+            Response: Date in a more readable format
+        """
+    
+    #Get last match data
+    year = re.findall("^[0-9]{4}", date)[0]
+    month = re.findall("(?<=-)[0-9]{2}(?=-)", date)[0]
+    day = re.findall("(?<=-)[0-9]{2}(?!-)", date)[0]
+    hour = re.findall("(?<=[A-Z]{1})[0-9]{2}:[0-9]{2}", date)[0]
+    return f"{day}/{month}/{year} {hour}"
 
 def main():
     name = "SpaguettiCoded"
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    result = peak_elo(name= name, region= region, tag= tag, target_player= "SpaguettiCoded")
+    result = get_vct("vct_americas", "SEN")
     print(result)
 
 if __name__ == "__main__":

@@ -9,8 +9,6 @@ bot = PiumPiumBot_Config()
 
 #To Do: Implement function to delete #To Do comments from PROD
 #To Do: Implement function to delete main from valorantFDS.py since it is only used for testing purposes
-#To Do: Create zips for the different hosts with a new attribute on the config file
-
 def update_version(versionToIncrease: str) -> str:
     """
         Increase the selected version (major|minor|patch) of the PiumPiumBot and set version type to PROD.
