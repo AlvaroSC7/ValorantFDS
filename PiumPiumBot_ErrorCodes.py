@@ -7,7 +7,7 @@ class ErrorCodes:
         self.ERR_CODE_101 = "ERR_CODE_101"  #No recent matches found for the user
         self.ERR_CODE_102 = "ERR_CODE_102"  #Player not found in last game
         self.ERR_CODE_103 = "ERR_CODE_103"  #No player found using the target agent in the last user game
-        self.ERR_CODE_104 = "ERR_CODE_104"  
+        self.ERR_CODE_104 = "ERR_CODE_104"  #Esport team has no upcoming/played games data
         self.ERR_CODE_105 = "ERR_CODE_105"  #No recent matches found for the user in the selected map
         self.ERR_CODE_106 = "ERR_CODE_106"  #No recent matches found for the user with the selected agent
         self.ERR_CODE_107 = "ERR_CODE_107"  #No recent games found, even using v2 API
@@ -15,9 +15,9 @@ class ErrorCodes:
         self.ERR_CODE_109 = "ERR_CODE_109"
         #Internal errors
         self.ERR_CODE_110 = "ERR_CODE_110"  #Wrong Json version used in internal function. ie, v2 API Json used in v3 function
-        self.ERR_CODE_111 = "ERR_CODE_111"
-        self.ERR_CODE_112 = "ERR_CODE_112"
-        self.ERR_CODE_113 = "ERR_CODE_113"
+        self.ERR_CODE_111 = "ERR_CODE_111"  #Competition unknown for esports command
+        self.ERR_CODE_112 = "ERR_CODE_112"  #Esport team is unkwnown for esports command
+        self.ERR_CODE_113 = "ERR_CODE_113"  
         self.ERR_CODE_114 = "ERR_CODE_114"
         self.ERR_CODE_115 = "ERR_CODE_115"
         self.ERR_CODE_116 = "ERR_CODE_116"
@@ -101,7 +101,9 @@ class ErrorCodes:
         elif(errorCode == self.ERR_CODE_103):
             result = "No se ha encontrado ningun jugador usando el agente objetivo en tu ultima partida"
             print(f"{self.ERR_CODE_103} - No player was using the selected agent in the user's last game")
-
+        elif(errorCode == self.ERR_CODE_104):
+            result = "El equipo seleccionado no tiene partidos proximos o resultados conocidos para esta competicion"
+            print(f"{self.ERR_CODE_104} - Requested team has not played or upcoming matches data")
         elif(errorCode == self.ERR_CODE_105):
             result = "No hay registradas partidas recientes en el mapa seleccionado"
             print(f"{self.ERR_CODE_105} - No matches in the selected map")
@@ -119,6 +121,12 @@ class ErrorCodes:
         if(errorCode == self.ERR_CODE_110):
             result = "Error interno, version de Json file erronea"
             print(f"{self.ERR_CODE_110} - Requested JSON version is not valid")
+        elif(errorCode == self.ERR_CODE_111):
+            result = "Error interno, competicion desconocida"
+            print(f"{self.ERR_CODE_111} - Requested competition for esport command is unknown")
+        elif(errorCode == self.ERR_CODE_112):
+            result = "Error interno, equipo desconocido"
+            print(f"{self.ERR_CODE_112} - Requested team is not known for esport command")
         else:
             result = self._errorUnknownError()
         return result
