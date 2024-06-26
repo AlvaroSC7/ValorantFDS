@@ -66,6 +66,21 @@ class ValorantFDS_API:
         url = self.general_url + f"v1/content"
         params = {'locale': locale}
         return self._send_request(url,params= params)
+    
+    def get_esports_schedule(self,region: str=None, league: str= None):
+        """
+        Get all esports competitions information.
+
+        Parameters:
+            region  (str):  Region of the esport match or competition. Optional
+            league  (str):  Competition itself. Optional
+        Returns:
+            Response: The HTTP response containing the content.
+        """
+
+        url = self.general_url + f"v1/esports/schedule"
+        params = {'region': region, 'league': league}
+        return self._send_request(url,params= params)
         
     def get_this_season_elo_api(self,region: str,name: str,tag: str):
         """
