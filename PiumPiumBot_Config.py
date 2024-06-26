@@ -3,7 +3,7 @@ from os.path import dirname, abspath
 class PiumPiumBot_Config:
     def __init__(self):
         #Version
-        self.version = '1.0.5'
+        self.version = '1.0.6'
         self.type = 'DEV'
         self.host = PiumPiumBot_Host(url= 'dev', id= 'dev', node= 'dev')
         #Paths
