@@ -14,7 +14,6 @@ errorCodeList = ErrorCodes()
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
-#To Do: Implement commands in different cattegories: Configuration, General, Esports
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
