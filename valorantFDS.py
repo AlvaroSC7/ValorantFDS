@@ -96,30 +96,18 @@ def get_player_data(player: str) -> dict:
         Returns:
             Response: Dictionary with the player region, name and tag.
         """
-    #To Do: Implement this in private json for privacy reasons
-    #To Do: Add puuid to the dictionary for every player once it is stored in Json so puuid is only looked once. Improves performance
-    alvaro = {'region': 'eu', 'name': 'SpaguettiCoded', 'tag': "EUW"}
-    dani = {'region': 'eu', 'name': 'Barl0ck', 'tag': "0205"}
-    ana = {'region': 'eu', 'name': 'shadowdanna', 'tag': "81502"}
-    laura = {'region': 'eu', 'name': 'nightdise', 'tag': "EUW"}
+    try:
+        with open(bot.PRIVATE_PATH + '/userList.json') as json_file:
+            userList = json.load(json_file)
+    except:
+        return errorCode.handleErrorCode(errorCode.ERR_CODE_113)
 
-    alvaro_discord = "luzil19"
-    dani_discord = "barlock3"
-    ana_discord = "anitta9573"
-    laura_discord = "nightdise"
-
-    user = str(player)
-    if(user == alvaro_discord):
-        return alvaro
-    elif(user == dani_discord):
-        return dani
-    elif(user == ana_discord):
-        return ana
-    elif(user == laura_discord):
-        return laura
-    else:
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_120)
-        return errorCode.ERR_CODE_120
+    for user in userList['user']: 
+        if(user['discord'] == str(player)):
+            return user['gameData']
+    
+    errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_120)
+    return errorCode.ERR_CODE_120    
 
 def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
     """
@@ -1103,8 +1091,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    result = get_vct("vct_americas", "SEN")
-    print(result)
+
 
 if __name__ == "__main__":
     main()
