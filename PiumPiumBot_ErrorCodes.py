@@ -17,7 +17,7 @@ class ErrorCodes:
         self.ERR_CODE_110 = "ERR_CODE_110"  #Wrong Json version used in internal function. ie, v2 API Json used in v3 function
         self.ERR_CODE_111 = "ERR_CODE_111"  #Competition unknown for esports command
         self.ERR_CODE_112 = "ERR_CODE_112"  #Esport team is unkwnown for esports command
-        self.ERR_CODE_113 = "ERR_CODE_113"  
+        self.ERR_CODE_113 = "ERR_CODE_113"  #Internal bot files missing
         self.ERR_CODE_114 = "ERR_CODE_114"
         self.ERR_CODE_115 = "ERR_CODE_115"
         self.ERR_CODE_116 = "ERR_CODE_116"
@@ -127,6 +127,9 @@ class ErrorCodes:
         elif(errorCode == self.ERR_CODE_112):
             result = "Error interno, equipo desconocido"
             print(f"{self.ERR_CODE_112} - Requested team is not known for esport command")
+        elif(errorCode == self.ERR_CODE_113):
+            result = "No se han encontrado datos de ningun usuario guardados. Para mas informacion sobre como configurar tus datos en el bot usa !help user"
+            print(f"{self.ERR_CODE_113} - Internal data file missing")
         else:
             result = self._errorUnknownError()
         return result
