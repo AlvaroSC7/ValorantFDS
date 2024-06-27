@@ -3,6 +3,8 @@ from valorantFDS import get_vct
 
 class Esports(commands.Cog):
     "Commands related to Esports competitions"
+
+    #To Do: investigar logos en el mensaje
     @commands.command(name='emea')
     async def get_emea(self, ctx):
         "Informacion de la VCT EMEA. Resultados de los partidos disputados y calendario proximo"
