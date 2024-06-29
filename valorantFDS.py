@@ -60,12 +60,15 @@ def get_last_match_data(region: str,name: str,tag: str,target_player: str, targe
         Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
         """
     #Check first given command
+    if(type(target_team) == str):    #Normalize only if it is not None
+        target_team = target_team.lower()
     if(target_player == None):
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_122)
-    elif(target_team != None and target_team.lower() != "enemy" and target_team.lower() != "ally"):
+    elif(target_team != None and target_team != "enemy" and target_team != "ally"):
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_123)
     else:
         #Check if target is player name or player character
+        target_player = _normalize_agent_map(target_player)
         target_type = _get_target_type(target= target_player)
         if(target_type == "map"):
             response = errorCode.handleErrorCode(errorCode.ERR_CODE_124)
@@ -121,7 +124,7 @@ def get_target_wr(region: str,name: str,tag: str, target: str) -> str:
         Returns:
             Response    (float): WR of the player with the selected target .
         """
-    targetStandard = target.capitalize()
+    targetStandard = _normalize_agent_map(target)
     targetType = _get_target_type(target= targetStandard)
     if(errorCode.isErrorCode(targetType) == True):
         return targetType
@@ -258,12 +261,15 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
             Response        (str):  Bot response for the peak elo command
         """
     #Check first given command
+    if(type(targetTeam) == str):    #Normalize only if it is not None
+        targetTeam = targetTeam.lower()
     if(target_player == None):
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_122)
-    elif(targetTeam != None and targetTeam.lower() != "enemy" and targetTeam.lower() != "ally"):
+    elif(targetTeam != None and targetTeam != "enemy" and targetTeam != "ally"):
         response = errorCode.handleErrorCode(errorCode.ERR_CODE_123)
     else:
         #Check if target is player name or player character
+        target_player = _normalize_agent_map(target_player)
         target_type = _get_target_type(target= target_player)
         if(target_type == "map"):
             response = errorCode.handleErrorCode(errorCode.ERR_CODE_124)
@@ -1086,11 +1092,27 @@ def _translate_date(date: str) -> str:
     hour = re.findall("(?<=[A-Z]{1})[0-9]{2}:[0-9]{2}", date)[0]
     return f"{day}/{month}/{year} {hour}"
 
+def _normalize_agent_map(rawInput: str) -> str:
+    """
+        Normalize capital letter so all maps and agents are understood
+
+        Parameters:
+            rawInput    (str):  Agent or map as written by the user
+        Returns:
+            Response: Agent or map in correct format to be understood by API
+        """   
+    #Get last match data
+    normalized = rawInput.capitalize()
+    #Exception where normalize doesn't match the exact name used by Valorant API
+    normalized = re.sub("Kay.*", "KAY/O", normalized)
+    return normalized
+
 def main():
     name = "SpaguettiCoded"
     region = "eu"
     tag = "EUW"
     target = "Omen"
+    print(_normalize_agent_map("kayo"))
 
 
 if __name__ == "__main__":

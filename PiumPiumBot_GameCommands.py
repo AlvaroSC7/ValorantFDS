@@ -8,12 +8,12 @@ errorCodeList = ErrorCodes()
 #                         COMMANDS                               #
 ##################################################################
 #To Do: comando sens
-#To Do: comando para setear datos de jugadores
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
+#To Do: Implement different tokens for PROD and DEV (different bot for DEV only in PruebaBot) so bot can be used while I'm coding
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
