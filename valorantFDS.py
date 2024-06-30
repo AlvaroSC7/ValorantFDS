@@ -16,7 +16,7 @@ errorCode = ErrorCodes()
 #                         EXTERNAL FUNCTIONS                     #
 ##################################################################
 
-def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1) -> float:
+def get_last_match_HS_percentage(region: str,name: str,tag: str) -> float:
     """
         Get headshot percentage of a given player.
 
@@ -40,9 +40,11 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
         errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
         return errorCode.ERR_CODE_100
     
-    if(len(matchData['data']) == 0):
+    elif(len(matchData['data']) == 0):
        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
+    elif(matchData['data'][0]['meta']['mode'] == "Deathmatch"):  #RIOT does not track HS in DMs
+        return None
     else:
         headshots = matchData['data'][0]['stats']['shots']['head']
         total_shots = headshots + matchData['data'][0]['stats']['shots']['body'] + matchData['data'][0]['stats']['shots']['leg']
@@ -337,10 +339,14 @@ def get_vct(competition: str, team: str= None) -> str:
         else:
             result = ""
             for game in esportData['data']:
+                if(len(game['match']['teams']) == 0):
+                    continue    #Game data just updated to In Progress, API needs a minute to record teams information
                 if(team == None or game['match']['teams'][0]['code'] == team or game['match']['teams'][1]['code'] == team): 
                     #All teams requested or exactly a match of the requested team
                     if(game['state'] == "completed"):
                         result = result + f"{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"
+                    elif(game['state'] == "inProgress"):
+                        result = result + f"{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "  En juego ahora mismo"+ "\n"
                     else:
                         result = result + game['match']['teams'][0]['name'] + " - " +  game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"
             #Check if there is any data of the selected team or competition
@@ -412,10 +418,9 @@ def _get_target_type(target: str) -> str:
         if(agent['name'] != "Null UI Data!"):
             agents.append(agent['name'])
 
-    targetStandard = target.capitalize()  #Standarize target request
-    if(targetStandard in maps):
+    if(target in maps):
         targetType = "map"
-    elif(targetStandard in agents):
+    elif(target in agents):
         targetType = "agent"
     else:
         targetType = None   #Could be an error or just a player name
@@ -1079,13 +1084,37 @@ def _translate_date(date: str) -> str:
         Returns:
             Response: Date in a more readable format
         """
-    
+    daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     #Get last match data
-    year = re.findall("^[0-9]{4}", date)[0]
-    month = re.findall("(?<=-)[0-9]{2}(?=-)", date)[0]
-    day = re.findall("(?<=-)[0-9]{2}(?!-)", date)[0]
-    hour = re.findall("(?<=[A-Z]{1})[0-9]{2}:[0-9]{2}", date)[0]
-    return f"{day}/{month}/{year} {hour}"
+    year = int(re.findall("^[0-9]{4}", date)[0])
+    month = int(re.findall("(?<=-)[0-9]{2}(?=-)", date)[0])
+    day = int(re.findall("(?<=-)[0-9]{2}(?!-)", date)[0])
+    hour = int(re.findall("(?<=[A-Z]{1})[0-9]{2}(?=:[0-9]{2})", date)[0])
+    minutes = re.findall("(?<=[A-Z]{1}[0-9]{2}:)[0-9]{2}(?=:[0-9]{2})", date)[0]
+    #Time zone adjustment
+    hour = hour + 2
+    if(hour >= 24):
+        day = day + 1
+        hour = hour - 24
+        if(day > daysPerMonth[month - 1]):
+            day = 1
+            month = month + 1
+            if(month > 12):
+                month = 1
+                year = year + 1
+
+    #Adjust to 2 digit format
+    month = str(month)
+    day = str(day)
+    hour = str(hour)
+    if (len(month) == 1):
+        month = "0" + month
+    if (len(day) == 1):
+        day = "0" + day
+    if (len(hour) == 1):
+        hour = "0" + hour
+
+    return f"{day}/{month}/{year} {hour}:{minutes}"
 
 def _normalize_agent_map(rawInput: str) -> str:
     """
@@ -1149,7 +1178,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    print(get_puuid(region= "eu", name= "Jugador", tag= "peng1"))
+    print(get_vct("vct_americas" ,"LOUD"))
 
 
 if __name__ == "__main__":
