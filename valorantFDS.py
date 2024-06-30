@@ -16,7 +16,7 @@ errorCode = ErrorCodes()
 #                         EXTERNAL FUNCTIONS                     #
 ##################################################################
 
-def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1) -> float:
+def get_last_match_HS_percentage(region: str,name: str,tag: str) -> float:
     """
         Get headshot percentage of a given player.
 
@@ -40,9 +40,11 @@ def get_last_match_HS_percentage(region: str,name: str,tag: str,nMatches: int=1)
         errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
         return errorCode.ERR_CODE_100
     
-    if(len(matchData['data']) == 0):
+    elif(len(matchData['data']) == 0):
        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
        return errorCode.ERR_CODE_101
+    elif(matchData['data'][0]['meta']['mode'] == "Deathmatch"):  #RIOT does not track HS in DMs
+        return None
     else:
         headshots = matchData['data'][0]['stats']['shots']['head']
         total_shots = headshots + matchData['data'][0]['stats']['shots']['body'] + matchData['data'][0]['stats']['shots']['leg']
