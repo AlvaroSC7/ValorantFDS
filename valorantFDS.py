@@ -418,10 +418,9 @@ def _get_target_type(target: str) -> str:
         if(agent['name'] != "Null UI Data!"):
             agents.append(agent['name'])
 
-    targetStandard = target.capitalize()  #Standarize target request
-    if(targetStandard in maps):
+    if(target in maps):
         targetType = "map"
-    elif(targetStandard in agents):
+    elif(target in agents):
         targetType = "agent"
     else:
         targetType = None   #Could be an error or just a player name
