@@ -14,6 +14,7 @@ errorCodeList = ErrorCodes()
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
 #To Do: Add peak to lg command
+#!peak y !lg KAYO no funciona de ninguna manera
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
