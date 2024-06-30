@@ -190,7 +190,6 @@ def get_this_season_elo(region: str,name: str,tag: str) -> str:
         Returns:
             Response: The player elo in the current season
         """
-    #To Do: investigate bug when match is not ranked or unranked
     elo = _get_elo(region= region, name= name, tag= tag)
     if(elo != None):
         result = elo[0] + " - " + str(elo[1])
@@ -348,6 +347,35 @@ def get_vct(competition: str, team: str= None) -> str:
             if(result == ""):
                 result = errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_104)
             return result
+        
+def get_puuid(region: str,name: str,tag: str) -> str:
+    """
+        Get player puuid knowing its name, tag and region.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+        Returns:
+            Response: User's puuid
+        """
+    
+    #Get last match data
+    matches_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
+    #Parse data
+    matchData = matches_request.json()
+    _save_json(matchData,jsonName= "get_puuid")
+
+    #Check if player has changed its name
+    if(matchData['status'] != 200):
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
+        return errorCode.ERR_CODE_100
+    
+    if(len(matchData['data']) == 0):
+       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
+       return errorCode.ERR_CODE_101
+    else:
+        return matchData['data'][0]['stats']['puuid']
 
 ##################################################################
 #                         INTERNAL FUNCTIONS                     #
@@ -579,7 +607,6 @@ def _get_elo(region: str,name: str,tag: str) -> tuple:
         Returns:
             Response: The player elo in the current season as a tuple of rank(str) + elo (int)
         """
-    #To Do: investigate bug when match is not ranked or unranked
     #Get last match data
     elo_request = api.get_this_season_elo_api(region= region,name= name,tag= tag)
     #Parse data
@@ -638,35 +665,6 @@ def _get_last_match_ID(region: str,name: str,tag: str) -> str:
     else:
         game_id = matchData['data'][0]['meta']['id']
         return game_id
-    
-def _get_puuid(region: str,name: str,tag: str) -> str:
-    """
-        Get player puuid knowing its name, tag and region.
-
-        Parameters:
-            region      (str):  Player region
-            name        (str):  Player user name
-            tag         (str):  Player tag
-        Returns:
-            Response: User's puuid
-        """
-    
-    #Get last match data
-    matches_request = api.get_lifetime_matches(region=region,name=name,tag=tag,size=1)
-    #Parse data
-    matchData = matches_request.json()
-    _save_json(matchData,jsonName= "_get_puuid")
-
-    #Check if player has changed its name
-    if(matchData['status'] != 200):
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
-        return errorCode.ERR_CODE_100
-    
-    if(len(matchData['data']) == 0):
-       errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
-       return errorCode.ERR_CODE_101
-    else:
-        return matchData['data'][0]['stats']['puuid']
     
 def _get_last_match_agent_peak_elo_old_game(name: str, gameId: str,targetAgent: str,targetTeam: str= None) -> dict:
     """
@@ -761,7 +759,7 @@ def _get_peak_elo(region: str,name: str,tag: str) -> tuple:
         """
     
     #Get last match data
-    puuid = _get_puuid(region=region,name=name,tag=tag)
+    puuid = get_puuid(region=region,name=name,tag=tag)
     elo_request = api.get_by_puuid_mmr_v2(region=region,puuid= puuid)
     #Parse data
     eloData = elo_request.json()
@@ -1151,7 +1149,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    print(_normalize_agent_map("kayo"))
+    print(get_puuid(region= "eu", name= "Jugador", tag= "peng1"))
 
 
 if __name__ == "__main__":
