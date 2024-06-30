@@ -8,7 +8,6 @@ errorCodeList = ErrorCodes()
 #                         COMMANDS                               #
 ##################################################################
 #To Do: comando sens
-#To Do: comando para setear datos de jugadores
 #To Do: comando para obtener mira
 #To Do: comando sonido ace
 #To Do: comando acs last game

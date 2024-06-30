@@ -2,6 +2,7 @@ from discord.ext import commands
 import json
 from PiumPiumBot_Config import PiumPiumBot_Config
 from PiumPiumBot_ErrorCodes import ErrorCodes
+from valorantFDS import get_puuid
 
 config = PiumPiumBot_Config()
 errorCode = ErrorCodes()
@@ -59,9 +60,13 @@ class InternalCommands(commands.Cog):
             Returns:
                 Response: String with the confirmation (or error message) of the data storage.
             """
-        #To Do: Add puuid to the dictionary for every player once it is stored in Json so puuid is only looked once. Improves performance
-
-        gameData = {'region': region, 'name': name, 'tag': tag}
+        puuid = get_puuid(region= region, name= name, tag= tag)
+        if(errorCode.isErrorCode(puuid) == True):
+            puuid = None
+            response = f"Datos de {str(discord)} guardados. No se ha podido obtener el puuid del jugador, revisa que el nombre y tag introducidos esten bien"
+        else:
+            response = f"Datos de {str(discord)} guardados" 
+        gameData = {'region': region, 'name': name, 'tag': tag, 'puuid': puuid}
         newUser = {'discord': str(discord), 'gameData': gameData}  
 
         usersFile = config.PRIVATE_PATH + '/userList.json'
