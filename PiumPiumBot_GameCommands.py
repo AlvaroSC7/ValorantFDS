@@ -13,6 +13,7 @@ errorCodeList = ErrorCodes()
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
+#To Do: Add peak to lg command
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
@@ -35,15 +36,17 @@ class GameCommands(commands.Cog):
         player = get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
-            await ctx.send(errorCode)
+            response = errorCode
         else:
             HS_accuracy = get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
             errorCode = errorCodeList.handleErrorCode(HS_accuracy)
             if(errorCode != None):
-                await ctx.send(errorCode)
+                response = errorCode
+            elif(HS_accuracy == None):
+                response = "RIOT no proporciona datos de precision en los Deathmatch"
             else:
                 response = f"Tu precision en la ultima partida fue: {HS_accuracy}%"
-                await ctx.send(response)
+        await ctx.send(response)
 
     @commands.command(name='elo')
     async def get_elo(self, ctx):
