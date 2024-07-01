@@ -81,7 +81,7 @@ def get_last_match_data(region: str,name: str,tag: str,target_player: str, targe
             if(returnedErrorCode != None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= targetData['name'], elo= targetData['elo'], hs= targetData['HS'])
+                response = _build_last_game_response(name= targetData['name'], elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
         else:   #It can be an error or just a player name
             #Get elo and HS of the selected player
             targetData = _get_last_match_player_data(region= region, name= name, tag= tag, targetName= target_player)
@@ -89,7 +89,7 @@ def get_last_match_data(region: str,name: str,tag: str,target_player: str, targe
             if(returnedErrorCode != None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= target_player, elo= targetData['elo'], hs= targetData['HS'])
+                response = _build_last_game_response(name= target_player, elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
     return response
 
 def get_player_data(player: str) -> dict:
@@ -1148,29 +1148,35 @@ def _extract_last_game_info(region: str, name: str, tag: str, mode_id: str) -> s
             target_HS = get_last_match_HS_percentage(region= region, name= name, tag= tag)
         else:
             target_HS = None    #RIOT does not track HS information for deathmatchs
+        target_peak = _get_peak_elo(region= region, name= name, tag= tag)                
 
         if(errorCode.isErrorCode(target_elo) == True):
             return target_elo #Return error code
         elif(errorCode.isErrorCode(target_HS) == True):
             return target_HS #Return error code
+        elif(errorCode.isErrorCode(target_peak) == True):
+            return target_peak #Return error code
         else:
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name}
+            targetPeakDate = re.sub("e","Temporada ",target_peak[1])
+            targetPeakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",targetPeakDate)
+            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
             return result
         
-def _build_last_game_response(name: str, elo: str, hs: str):
+def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
     """
         Converts the dictionnary with all the last game data into the string returned by !lg and similar commands. 
         Parameters:
-            region      (str):  Player region
-            elo         (str):  Elo of the target player
-            hs          (str):  Headshot percentage of the target player
+            region  (str):      Player region
+            elo     (str):      Elo of the target player
+            hs      (str):      Headshot percentage of the target player
+            peak    (tuple):    Peak elo of the target player as a tuple [peakElo, peakEloDate]    
         Returns:
             Response: String with the response of the bot for the !lg and similar commands
         """
     if(hs != None): # hs none means that RIOT does not track this for the last game mode
-        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%"
+        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + f"\n\tPeak: {peak[0]} -{peak[1]}"
     else:
-        response = f"{name}" + f"\n\t{elo}"
+        response = f"{name}" + f"\n\t{elo}" + f"\n\tPeak: {peak[0]} -{peak[1]}"
     return response
 
 def main():
