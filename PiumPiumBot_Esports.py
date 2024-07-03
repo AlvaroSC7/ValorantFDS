@@ -10,7 +10,7 @@ class Esports(commands.Cog):
     #To Do: investigar logos en el mensaje
     @commands.command(name='emea')
     async def get_emea(self, ctx):
-        "Informacion de la VCT EMEA. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de la VCT EMEA"
         log.startLog()
         response = get_vct("vct_emea")
         await ctx.send(response)
@@ -18,7 +18,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='na')
     async def get_na(self, ctx):
-        "Informacion de la VCT Americas. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de la VCT Americas"
         log.startLog()
         response = get_vct("vct_americas")
         await ctx.send(response)
@@ -26,7 +26,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='koi')
     async def get_koi(self, ctx):
-        "Informacion de KOI. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de KOI"
         log.startLog()
         response = get_vct("vct_emea", "KOI")
         await ctx.send(response)
@@ -34,7 +34,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='th')
     async def get_th(self, ctx):
-        "Informacion de Heretics. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de Heretics"
         log.startLog()
         response = get_vct("vct_emea", "TH")
         await ctx.send(response)
@@ -42,7 +42,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='gx')
     async def get_gx(self, ctx):
-        "Informacion de GiantX. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de GiantX"
         log.startLog()
         response = get_vct("vct_emea", "GX")
         await ctx.send(response)
@@ -50,7 +50,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='nrg')
     async def get_nrg(self, ctx):
-        "Informacion de NRG. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de NRG"
         log.startLog()
         response = get_vct("vct_americas", "NRG")
         await ctx.send(response)
@@ -58,7 +58,7 @@ class Esports(commands.Cog):
 
     @commands.command(name='sen')
     async def get_sen(self, ctx):
-        "Informacion de Sentinels. Resultados de los partidos disputados y calendario proximo"
+        "Informacion de Sentinels"
         log.startLog()
         response = get_vct("vct_americas", "SEN")
         await ctx.send(response)
