@@ -26,7 +26,7 @@ class GameCommands(commands.Cog):
     @commands.command(name='HS')
     async def get_HS_percentage_deprecate(self, ctx):
         """ 
-            Indica el porcentaje de tiros a la cabeza que has tenido en tu ultima partida
+            Porcentaje de headshot de tu ultima partida
 
             !HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando
             """
@@ -39,7 +39,7 @@ class GameCommands(commands.Cog):
 
     @commands.command(name='hs')
     async def get_HS_percentage(self, ctx):
-        "Indica el porcentaje de tiros a la cabeza que has tenido en tu ultima partida"
+        "Porcentaje de headshot de tu ultima partida"
         log.startLog()
         author = ctx.message.author
         player = get_player_data(player=author)
@@ -60,7 +60,7 @@ class GameCommands(commands.Cog):
 
     @commands.command(name='elo')
     async def get_elo(self, ctx):
-        "Indica tu elo actual como {Rango} - {Puntuacion total en el sistema de rangos}"
+        "Tu elo actual"
         log.startLog()
         author = ctx.message.author
         player = get_player_data(player=author)
@@ -84,9 +84,7 @@ class GameCommands(commands.Cog):
                                                   target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyos datos quieres saber"), 
                                                   target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
         """
-            Proporciona el elo y porcentaje de tiro a la cabeza de cualquier jugador de tu ultima partida
-
-            Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
+            Informacion de un jugador de tu ultima partida. Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
 
             !last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando
             """
@@ -100,11 +98,7 @@ class GameCommands(commands.Cog):
     async def get_last_game_player_data(self, ctx,
                                         target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyos datos quieres saber"), 
                                         target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
-        """
-            Proporciona el elo y porcentaje de tiro a la cabeza de cualquier jugador de tu ultima partida
-
-            Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
-            """
+        "Informacion de un jugador de tu ultima partida. Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
         log.startLog()
         author = ctx.message.author
         player = get_player_data(player=author)
@@ -123,11 +117,7 @@ class GameCommands(commands.Cog):
 
     @commands.command(name='wr')
     async def get_wr(self, ctx,target = commands.parameter(default=None, description="nombre del mapa o agente cuyo porcentaje de victorias quieres saber")):
-        """
-            Indica tu porcentaje de victoria con un agente o en un mapa concreto
-
-            Ejemplos: !wr Omen !wr Split
-            """
+        "Tu porcentaje de victoria con un agente o en un mapa"
         log.startLog()
         #No target selected
         if(target == None):
@@ -152,7 +142,7 @@ class GameCommands(commands.Cog):
 
     @commands.command(name='avg_elo')
     async def get_average_elo(self, ctx):
-        "Indica el elo medio de cada equipo de tu ultima partida"
+        "Elo medio de cada equipo de tu ultima partida"
         log.startLog()
         author = ctx.message.author
         player = get_player_data(player=author)
@@ -174,11 +164,7 @@ class GameCommands(commands.Cog):
     async def peak(self, ctx,
                         target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyo maximo elo quieres saber"), 
                         target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
-        """
-            Proporciona el elo maximo que ha alcanzado cualquier jugador de tu ultima partida
-
-            Ejemplos: !peak IMissHer !peak Sova enemy !peak Jett"
-            """
+        "Elo maximo que ha alcanzado cualquier jugador de tu ultima partida. Ejemplos: !peak IMissHer !peak Sova enemy !peak Jett"
         log.startLog()
         author = ctx.message.author
         player = get_player_data(player=author)

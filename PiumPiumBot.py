@@ -9,7 +9,7 @@ from PiumPiumBot_InternalCommands import InternalCommands
 from PiumPiumBot_GameCommands import GameCommands
 
 intents = discord.Intents.all()
-helper = commands.DefaultHelpCommand(width= 500, no_category = 'Comandos genericos')
+helper = commands.DefaultHelpCommand(no_category = 'Comandos genericos')
 bot = commands.Bot(command_prefix='!',intents=intents, help_command= helper)
 errorCodeList = ErrorCodes()
 config = PiumPiumBot_Config()
