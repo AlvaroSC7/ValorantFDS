@@ -10,8 +10,12 @@ class PiumPiumBot_Config:
     def __init__(self):
         #Version
         self.version = '1.0.10'
-        self.type = 'PROD'
-        self.host = PiumPiumBot_Host(url= 'https://control.bot-hosting.net/server/9f84f86d', id= '9f84f86d-7eab-40c5-94b2-7602d0d69208', node= 'fi3')
+        self.type = 'DEV'
+        self.host = PiumPiumBot_Host(url= 'dev', id= 'dev', node= 'dev')
+        if(self.type == 'DEV'):
+            self.logLevel = logging.INFO
+        else:
+            self.logLevel = logging.ERROR
         #Paths
         self.WS_PATH = dirname(abspath(__file__))
         self.TEMP_PATH = self.WS_PATH + "/temp"
