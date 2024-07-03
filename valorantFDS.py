@@ -10,7 +10,6 @@ errorCode = ErrorCodes()
 
 #To Do: implement snowflake
 #To Do: encapsulate all functions within a class
-#To Do: add logging with errors for PROD and performance + errors for DEV
 
 ##################################################################
 #                         EXTERNAL FUNCTIONS                     #

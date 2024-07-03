@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+import logging
+from datetime import date
 from PiumPiumBot_ErrorCodes import ErrorCodes
 from PiumPiumBot_Config import PiumPiumBot_Config
 from PiumPiumBot_Esports import Esports
@@ -11,6 +13,7 @@ helper = commands.DefaultHelpCommand(width= 500, no_category = 'Comandos generic
 bot = commands.Bot(command_prefix='!',intents=intents, help_command= helper)
 errorCodeList = ErrorCodes()
 config = PiumPiumBot_Config()
+logger = logging.getLogger(__name__)
 
 def get_bot_token():
     """
@@ -34,6 +37,9 @@ async def on_ready():
     await bot.add_cog(GameCommands())
 
 def main():
+    config.clean_logs()
+    today = date.today()
+    logging.basicConfig(filename= config.TEMP_PATH + f"/PiumPiumBot_{today.strftime("%d_%m_%Y")}.log", level=config.logLevel, format='%(asctime)s %(levelname)s [%(name)s] %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
     token = get_bot_token()
     bot.run(token)
 
