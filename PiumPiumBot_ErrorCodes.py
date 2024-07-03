@@ -1,4 +1,8 @@
 from re import findall, search
+import inspect
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ErrorCodes:
     def __init__(self):
@@ -89,72 +93,94 @@ class ErrorCodes:
         return result
 
     def _errorGroupNoDataAPI(self, errorCode: str, httpError: str= None) ->str:
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 4)
+
         if(errorCode == self.ERR_CODE_100):
             result = "El jugador ha cambiado su nombre o tag desde tu última partida con el"
-            print(f"{self.ERR_CODE_100} - API returned error code {httpError}")
+            logMessage = f"{calframe[3][3]}: {errorCode} - API returned error code {httpError}"
         elif(errorCode == self.ERR_CODE_101):
             result = "No se han encontrado partidas recientes"
-            print(f"{self.ERR_CODE_101} - No recent games found for the user")
+            logMessage = f"{calframe[3][3]}: {errorCode} - No recent games found for the user"
         elif(errorCode == self.ERR_CODE_102):
             result = "No se ha encontrado al jugador objetivo en tu anterior partida"
-            print(f"{self.ERR_CODE_102} - Player not found in last game")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Player not found in last game"
         elif(errorCode == self.ERR_CODE_103):
             result = "No se ha encontrado ningun jugador usando el agente objetivo en tu ultima partida"
-            print(f"{self.ERR_CODE_103} - No player was using the selected agent in the user's last game")
+            logMessage = f"{calframe[3][3]}: {errorCode} - No player was using the selected agent in the user's last game"
         elif(errorCode == self.ERR_CODE_104):
             result = "El equipo seleccionado no tiene partidos proximos o resultados conocidos para esta competicion"
-            print(f"{self.ERR_CODE_104} - Requested team has not played or upcoming matches data")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Requested team has not played or upcoming matches data"
         elif(errorCode == self.ERR_CODE_105):
             result = "No hay registradas partidas recientes en el mapa seleccionado"
-            print(f"{self.ERR_CODE_105} - No matches in the selected map")
+            logMessage = f"{calframe[3][3]}: {errorCode} - No matches in the selected map"
         elif(errorCode == self.ERR_CODE_106):
             result = "No hay registradas partidas recientes con el agente seleccionado"
-            print(f"{self.ERR_CODE_106} - No matches with the selected agent")
+            logMessage = f"{calframe[3][3]}: {errorCode} - No matches with the selected agent"
         elif(errorCode == self.ERR_CODE_107):
             result = "No se han encontrado partidas recientes, incluso buscando en los datos mas antiguos"
-            print(f"{self.ERR_CODE_107} - Player not found in last game, even using v2 API")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Player not found in last game, even using v2 API"
         else:
             result = self._errorUnknownError()
+
+        print(logMessage)
+        logger.warning(logMessage)
         return result
 
     def _errorGroupInternal(self, errorCode: str) ->str:
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 4)
+
         if(errorCode == self.ERR_CODE_110):
             result = "Error interno, version de Json file erronea"
-            print(f"{self.ERR_CODE_110} - Requested JSON version is not valid")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Requested JSON version is not valid"
         elif(errorCode == self.ERR_CODE_111):
             result = "Error interno, competicion desconocida"
-            print(f"{self.ERR_CODE_111} - Requested competition for esport command is unknown")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Requested competition for esport command is unknown"
         elif(errorCode == self.ERR_CODE_112):
             result = "Error interno, equipo desconocido"
-            print(f"{self.ERR_CODE_112} - Requested team is not known for esport command")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Requested team is not known for esport command"
         elif(errorCode == self.ERR_CODE_113):
             result = "No se han encontrado datos de ningun usuario guardados. Para mas informacion sobre como configurar tus datos en el bot usa !help user"
-            print(f"{self.ERR_CODE_113} - Internal data file missing")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Internal data file missing"
         else:
             result = self._errorUnknownError()
+
+        print(logMessage)
+        logger.warning(logMessage)
         return result
 
     def _errorGroupDiscord(self, errorCode: str) ->str:
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 4)
+
         if(errorCode == self.ERR_CODE_120):
             result = "Este usuario de Discord no tiene datos de Valorant registrados"
-            print(f"{self.ERR_CODE_120} - Wrong discord user name")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Wrong discord user name"
         elif(errorCode == self.ERR_CODE_121):
             result = "No se ha reconocido el agente o mapa especificado"
-            print(f"{self.ERR_CODE_121} - Target not found in map nor in agent lists")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Target not found in map nor in agent lists"
         elif(errorCode == self.ERR_CODE_122):
             result = "Faltan parametros de entrada para el comando. Ejemplo: !last_game shadowdanna | !last_game Reyna | !wr Abyss"
-            print(f"{self.ERR_CODE_122} - No target player given")
+            logMessage = f"{calframe[3][3]}: {errorCode} - No target player given"
         elif(errorCode == self.ERR_CODE_123):
             result = "Nombre de equipo incorrecto. Posibles valores: enemy | ally . Si no introduces ninguno se mirara primero en los enemigos y luego en los aliados. Si querias poner un nombre con espacios usa \" \". Ejemplo: !last_game \"Un nombre\""
-            print(f"{self.ERR_CODE_123} - Wrong team name")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Wrong team name"
         elif(errorCode == self.ERR_CODE_124):
             result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !peak Reyna"
-            print(f"{self.ERR_CODE_124} - Map selected when agent or player ID was expected")
+            logMessage = f"{calframe[3][3]}: {errorCode} - Map selected when agent or player ID was expected"
         else:
             result = self._errorUnknownError()
+
+        print(logMessage)
+        logger.warning(logMessage)
         return result
 
     def _errorUnknownError(self)-> str:
-        print(f"{self.ERR_CODE_199} - Unknown error")
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 5)
+        logMessage = f"{calframe[3][3]}: {self.ERR_CODE_199} - Unknown error"
+        print(logMessage)
+        logger.warning(logMessage)
         return "Error desconocido"
     

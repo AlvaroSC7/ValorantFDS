@@ -1,11 +1,12 @@
 from discord.ext import commands
 import json
-from PiumPiumBot_Config import PiumPiumBot_Config
+from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
 from PiumPiumBot_ErrorCodes import ErrorCodes
 from valorantFDS import get_puuid
 
 config = PiumPiumBot_Config()
 errorCode = ErrorCodes()
+log = PiumPiumBot_Log()
 
 class InternalCommands(commands.Cog):
     "Comandos para la configuracion del bot y obtencion de informacion del mismo"
@@ -17,14 +18,18 @@ class InternalCommands(commands.Cog):
     @commands.command(name='version')
     async def get_version(self, ctx):
         "Version de PiumPiumBot que se esta ejecutando"
+        log.startLog()
         response = f"{config.version}-{config.type[0]}"
         await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
 
     @commands.command(name='host')
     async def get_host(self, ctx):
-        "Informacion del host y servidor donde PiumPiumBot está alojado actualmente"
+        "Host y servidor donde PiumPiumBot está alojado actualmente"
+        log.startLog()
         response = f"URL: {config.host.url}\nID: {config.host.id}\nNode: {config.host.node}"
         await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
 
     @commands.command(name='user')
     async def save_user(self, ctx, 
@@ -32,17 +37,21 @@ class InternalCommands(commands.Cog):
                         tag: str = commands.parameter(default=None, description="Tag de Valorant"), 
                         region: str = commands.parameter(default="eu", description="Region donde juegas. Posibles valores: ap, br, eu, kr, latam, na")):
          
-        "Guarda los datos de un jugador en la configuracion interna de PiumPium. Necesario para que la mayoria de los comandos funcione"
+        "Guarda los datos de un jugador en la memoria del bot. Necesario ejecutar la primera vez"
+        log.startLog()
         author = str(ctx.message.author)
         response = self._store_data(discord= author, name= name, tag= tag, region= region)
         await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
 
     @commands.command(name='del')
     async def delete_user(self, ctx):
-        "Borra los datos de un jugador en la configuracion interna de PiumPium. Es recomendable usarlo si se va a dejar un servidor en el que has usado el bot previamente"
+        "Borra los datos de un jugador de la memoria del bot"
+        log.startLog()
         author = str(ctx.message.author)
         response = self._remove_data(discord= author)
         await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
 
     ##################################################################
     #                    INTERNAL FUNCTIONS                          #
