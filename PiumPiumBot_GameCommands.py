@@ -19,6 +19,8 @@ log = PiumPiumBot_Log()
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
 #!peak y !lg KAYO no funciona de ninguna manera
+#To Do: !peak peta con unranked (log PROD)
+#To Do: Implementar !ruleta
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"

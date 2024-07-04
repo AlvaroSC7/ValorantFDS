@@ -280,9 +280,12 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
             if(isErrorCode != None):
                 response = isErrorCode
             else:
-                peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
-                peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
-                response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
+                if(targetData['peakElo'] == "Unranked"):
+                    response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}"
+                else:
+                    peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
+                    peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
+                    response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
         else:   #Can be an error or just a player name
             #Get elo and HS of the selected player
             targetData = _get_last_match_user_peak_elo(region= region, name= name, tag= tag, targetName= target_player)
@@ -290,9 +293,12 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
             if(isErrorCode != None):
                 response = isErrorCode
             else:
-                peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
-                peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
-                response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
+                if(targetData['peakElo'] == "Unranked"):
+                    response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}"
+                else:
+                    peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
+                    peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
+                    response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
     return response
 
 def get_vct(competition: str, team: str= None) -> str:
@@ -1156,9 +1162,12 @@ def _extract_last_game_info(region: str, name: str, tag: str, mode_id: str) -> s
         elif(errorCode.isErrorCode(target_peak) == True):
             return target_peak #Return error code
         else:
-            targetPeakDate = re.sub("e","Temporada ",target_peak[1])
-            targetPeakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",targetPeakDate)
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
+            if(target_peak[0] == "Unranked"):
+                    result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], None]}
+            else:
+                targetPeakDate = re.sub("e","Temporada ",target_peak[1])
+                targetPeakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",targetPeakDate)
+                result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
             return result
         
 def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
@@ -1172,10 +1181,15 @@ def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
         Returns:
             Response: String with the response of the bot for the !lg and similar commands
         """
-    if(hs != None): # hs none means that RIOT does not track this for the last game mode
-        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + f"\n\tPeak: {peak[0]} -{peak[1]}"
+    if(peak[1] == None):
+        peakElo = f"\n\tPeak: {peak[0]}"    #It's unrated, it does not have date
     else:
-        response = f"{name}" + f"\n\t{elo}" + f"\n\tPeak: {peak[0]} -{peak[1]}"
+        peakElo = f"\n\tPeak: {peak[0]} - {peak[1]}"
+
+    if(hs != None): # hs none means that RIOT does not track this for the last game mode
+        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + peakElo
+    else:
+        response = f"{name}" + f"\n\t{elo}" + peakElo
     return response
 
 def main():
@@ -1183,7 +1197,7 @@ def main():
     region = "eu"
     tag = "EUW"
     target = "Omen"
-    print(get_vct("vct_americas" ,"LOUD"))
+    print(peak_elo(region= "eu", name= "munskip", tag= "ESP", target_player= "munskip", targetTeam= None))
 
 
 if __name__ == "__main__":
