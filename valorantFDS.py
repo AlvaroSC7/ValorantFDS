@@ -36,9 +36,10 @@ class RoulettePool:
         for agent in contentData['characters']:
             if(agent['name'] != "Null UI Data!"):
                 self.pool.append(agent['name'])
+        self.pool = list(set(self.pool))  #Due to some assets some agents may appear more than once
     
     def getRandomAgent(self):
-        if(self.pool == None):
+        if(self.pool == []):
             self.resetPool()
             return errorCode.handleErrorCode(errorCode.ERR_CODE_108)
         else:
