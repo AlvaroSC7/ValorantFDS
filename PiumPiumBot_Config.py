@@ -21,6 +21,7 @@ class PiumPiumBot_Config:
         self.TEMP_PATH = self.WS_PATH + "/temp"
         self.PRIVATE_PATH = self.WS_PATH + "/private"
         self.HOST_PATH = self.WS_PATH + "/host"
+        self.ICON_PATH = self.WS_PATH + "/icons"
 
     def clean_logs(self):
         today = datetime.now()

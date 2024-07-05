@@ -1,5 +1,7 @@
 from discord.ext import commands
+import discord
 import logging
+from os.path import isfile
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
 from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data, RoulettePool
 from PiumPiumBot_ErrorCodes import ErrorCodes
@@ -218,17 +220,25 @@ class GameCommands(commands.Cog):
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
-        #Check first given command
-        if(command == "reset"):
-            roulette.resetPool()
-            response = "Ruleta reseteada"
-        elif(command == None):
-            agent = roulette.getRandomAgent()
-            if(errorCodeList.isErrorCode(agent)):
-                response = agent
-            else:
-                response = f"{player['name']}:\n\t{agent}"
         else:
-            response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_125)
-        await ctx.send(response)
+            #Check first given command
+            if(command == "reset"):
+                roulette.resetPool()
+                response = "Ruleta reseteada"
+                agent = None
+            elif(command == None):
+                agent = roulette.getRandomAgent()
+                if(errorCodeList.isErrorCode(agent)):
+                    response = agent
+                else:
+                    response = f"{player['name']}:\n\t{agent}"
+            else:
+                response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_125)
+
+            await ctx.send(response)
+            if(agent == "KAY/O"):   #Official name is not valid for a file
+                agent = "KAYO"
+            gifFile = config.ICON_PATH + f"/{agent}.gif"
+            if(isfile(gifFile)):
+                await ctx.send(file= discord.File(gifFile))
         log.finishLog(ctx.invoked_with)
