@@ -1,5 +1,6 @@
 import json
 import re
+from random import choice
 from valorantFDS_API import ValorantFDS_API
 from PiumPiumBot_Config import PiumPiumBot_Config
 from PiumPiumBot_ErrorCodes import ErrorCodes
@@ -7,6 +8,44 @@ from PiumPiumBot_ErrorCodes import ErrorCodes
 api = ValorantFDS_API()
 bot = PiumPiumBot_Config()
 errorCode = ErrorCodes()
+
+##################################################################
+#                         CLASSES                                #
+##################################################################
+
+class RoulettePool:
+    """
+    Class with a pool of agents to select randomly one character.
+    Attributes:
+        pool            (list): List of available agents
+        agentsRemaining (int):  Number of agents remaining in a team  
+    """
+    def __init__(self):
+        self.pool = []
+        self.resetPool()
+
+    def resetPool(self):
+        "Resets the pool of available agents"
+        #Get content from API
+        language = "es-ES"
+        content = api.get_content(locale= language)
+        contentData = content.json()
+        _save_json(contentData,jsonName= "get_roulette")
+
+        self.pool = []
+        for agent in contentData['characters']:
+            if(agent['name'] != "Null UI Data!"):
+                self.pool.append(agent['name'])
+    
+    def getRandomAgent(self):
+        if(self.pool == None):
+            self.resetPool()
+            return errorCode.handleErrorCode(errorCode.ERR_CODE_108)
+        else:
+            agent = choice(self.pool)
+            self.pool.remove(agent)
+            return agent
+
 
 #To Do: implement snowflake
 #To Do: encapsulate all functions within a class
@@ -387,6 +426,7 @@ def get_puuid(region: str,name: str,tag: str) -> str:
        return errorCode.ERR_CODE_101
     else:
         return matchData['data'][0]['stats']['puuid']
+    
 
 ##################################################################
 #                         INTERNAL FUNCTIONS                     #

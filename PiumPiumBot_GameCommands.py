@@ -1,13 +1,14 @@
 from discord.ext import commands
 import logging
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data
+from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data, RoulettePool
 from PiumPiumBot_ErrorCodes import ErrorCodes
 
 errorCodeList = ErrorCodes()
 logger = logging.getLogger(__name__)
 config = PiumPiumBot_Config()
 log = PiumPiumBot_Log()
+roulette = RoulettePool()
 
 ##################################################################
 #                         COMMANDS                               #
@@ -18,9 +19,6 @@ log = PiumPiumBot_Log()
 #To Do: comando acs last game
 #To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
 #To Do: Implement !champions when format is known
-#!peak y !lg KAYO no funciona de ninguna manera
-#To Do: !peak peta con unranked (log PROD)
-#To Do: Implementar !ruleta
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
@@ -207,5 +205,30 @@ class GameCommands(commands.Cog):
             response = errorCode
         else:
             response = f"Mariano ha perdido el {mariano_win_percentage}% de las partidas que ha jugado. Que barbaridad"
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
+    @commands.command(name='ruleta')
+    async def get_roulette(self, ctx, 
+                        command: str= commands.parameter(default=None, description="OPCIONAL. Resetea que agentes te pueden tocar si escribes !ruleta reset")):
+        "Te asigna un agente aleatorio"
+        log.startLog()
+        author = ctx.message.author
+        player = get_player_data(player=author)
+        errorCode = errorCodeList.handleErrorCode(player)
+        if(errorCode != None):
+            response = errorCode
+        #Check first given command
+        if(command == "reset"):
+            roulette.resetPool()
+            response = "Ruleta reseteada"
+        elif(command == None):
+            agent = roulette.getRandomAgent()
+            if(errorCodeList.isErrorCode(agent)):
+                response = agent
+            else:
+                response = f"{player['name']}:\n\t{agent}"
+        else:
+            response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_125)
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)

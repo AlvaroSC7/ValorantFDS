@@ -45,8 +45,8 @@ class PiumPiumBot_Host:
 
 class PiumPiumBot_Log:
     def __init__(self):
-        self.startCommand = 0
-        self.endCommand = 0
+        self.startCommand = datetime.now()
+        self.endCommand = datetime.now()
 
     def startLog(self):
         self.startCommand = datetime.now()
@@ -55,4 +55,4 @@ class PiumPiumBot_Log:
         self.endCommand = datetime.now()
         duration = self.endCommand - self.startCommand
         logger.info(f"!{command} - Duration: {duration.total_seconds()}s")
-        self.startCommand = 0
+        self.startCommand = datetime.now()

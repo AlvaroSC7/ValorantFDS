@@ -15,7 +15,7 @@ class ErrorCodes:
         self.ERR_CODE_105 = "ERR_CODE_105"  #No recent matches found for the user in the selected map
         self.ERR_CODE_106 = "ERR_CODE_106"  #No recent matches found for the user with the selected agent
         self.ERR_CODE_107 = "ERR_CODE_107"  #No recent games found, even using v2 API
-        self.ERR_CODE_108 = "ERR_CODE_108"  
+        self.ERR_CODE_108 = "ERR_CODE_108"  #No available agents in the roulette pool
         self.ERR_CODE_109 = "ERR_CODE_109"
         #Internal errors
         self.ERR_CODE_110 = "ERR_CODE_110"  #Wrong Json version used in internal function. ie, v2 API Json used in v3 function
@@ -34,7 +34,7 @@ class ErrorCodes:
         self.ERR_CODE_122 = "ERR_CODE_122"  #No input parameter given. No map or agent selected for a command that required it
         self.ERR_CODE_123 = "ERR_CODE_123"  #Wrong team name
         self.ERR_CODE_124 = "ERR_CODE_124"  #Map selected when agent or player name was expected
-        self.ERR_CODE_125 = "ERR_CODE_125"
+        self.ERR_CODE_125 = "ERR_CODE_125"  #Wrong parameter in roulette
         self.ERR_CODE_126 = "ERR_CODE_126"
         self.ERR_CODE_127 = "ERR_CODE_127"
         self.ERR_CODE_128 = "ERR_CODE_128"
@@ -120,6 +120,9 @@ class ErrorCodes:
         elif(errorCode == self.ERR_CODE_107):
             result = "No se han encontrado partidas recientes, incluso buscando en los datos mas antiguos"
             logMessage = f"{calframe[3][3]}: {errorCode} - Player not found in last game, even using v2 API"
+        elif(errorCode == self.ERR_CODE_108):
+            result = "No quedan agentes disponibles, se ha resetado la ruleta, vuelve a ejecutar el comando. Se recomienda ejecutar !ruleta reset tras completar un equipo"
+            logMessage = f"{calframe[3][3]}: {errorCode} - No remaining agents in the roulette pool"
         else:
             result = self._errorUnknownError()
 
@@ -169,6 +172,9 @@ class ErrorCodes:
         elif(errorCode == self.ERR_CODE_124):
             result = "Has seleccionado un mapa. Selecciona un nombre de jugador o de agente para revisar sus datos. Ejemplo: !last_game shadowdanna | !peak Reyna"
             logMessage = f"{calframe[3][3]}: {errorCode} - Map selected when agent or player ID was expected"
+        elif(errorCode == self.ERR_CODE_125):
+            result = "Parametro inesperado. Para tirar la ruleta usa !ruleta. Para resetear la ruleta usa !ruleta reset"
+            logMessage = f"{calframe[3][3]}: {errorCode} - Wrong roulette parameter"
         else:
             result = self._errorUnknownError()
 
