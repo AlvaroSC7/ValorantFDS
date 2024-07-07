@@ -22,6 +22,7 @@ class RoulettePool:
     """
     def __init__(self):
         self.pool = []
+        self.totalPoolSize = 0
         self.resetPool()
 
     def resetPool(self):
@@ -37,6 +38,7 @@ class RoulettePool:
             if(agent['name'] != "Null UI Data!"):
                 self.pool.append(agent['name'])
         self.pool = list(set(self.pool))  #Due to some assets some agents may appear more than once
+        self.totalPoolSize = len(self.pool)
     
     def getRandomAgent(self):
         if(self.pool == []):
