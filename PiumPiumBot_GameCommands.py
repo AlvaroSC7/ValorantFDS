@@ -242,3 +242,10 @@ class GameCommands(commands.Cog):
             if(isfile(gifFile)):
                 await ctx.send(file= discord.File(gifFile))
         log.finishLog(ctx.invoked_with)
+
+    def bot_reset_roulette():
+        "Function to be called periodically to reset automatically roulette pool"
+        if(len(roulette.pool) < roulette.totalPoolSize):
+            log.startLog()
+            roulette.resetPool()
+            log.finishLog("Automatically resetted roulette")

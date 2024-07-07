@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import logging
 from datetime import date
 from PiumPiumBot_ErrorCodes import ErrorCodes
@@ -35,6 +35,11 @@ async def on_ready():
     await bot.add_cog(Esports())
     await bot.add_cog(InternalCommands())
     await bot.add_cog(GameCommands())
+    bot_20m_task.start()
+
+@tasks.loop(minutes= 20)
+async def bot_20m_task():
+    GameCommands.bot_reset_roulette()
 
 def main():
     config.clean_logs()
