@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class PiumPiumBot_Config:
     def __init__(self):
         #Version
-        self.version = '1.0.10'
+        self.version = '1.0.11'
         self.type = 'DEV'
         self.host = PiumPiumBot_Host(url= 'dev', id= 'dev', node= 'dev')
         if(self.type == 'DEV'):
