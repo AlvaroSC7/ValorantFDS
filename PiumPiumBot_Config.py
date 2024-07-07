@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 class PiumPiumBot_Config:
     def __init__(self):
         #Version
-        self.version = '1.0.10'
-        self.type = 'DEV'
-        self.host = PiumPiumBot_Host(url= 'dev', id= 'dev', node= 'dev')
+        self.version = '1.0.11'
+        self.type = 'PROD'
+        self.host = PiumPiumBot_Host(url= 'https://control.bot-hosting.net/server/9f84f86d', id= '9f84f86d-7eab-40c5-94b2-7602d0d69208', node= 'fi3')
         if(self.type == 'DEV'):
             self.logLevel = logging.INFO
         else:
