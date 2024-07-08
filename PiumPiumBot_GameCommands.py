@@ -25,20 +25,6 @@ roulette = RoulettePool()
 
 class GameCommands(commands.Cog):
     "Comandos relacionados con datos del juego y partidas del jugador"
-    #To Do: borrar esta funcion cuando ya nadie la use
-    @commands.command(name='HS')
-    async def get_HS_percentage_deprecate(self, ctx):
-        """ 
-            Porcentaje de headshot de tu ultima partida
-
-            !HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando
-            """
-        legacyLog = PiumPiumBot_Log()
-        legacyLog.startLog()
-        await self.get_HS_percentage(ctx)
-        response = f"!HS no esta continuado y se eliminará en futuras versiones en favor de !hs, considera usar ya el nuevo comando"
-        await ctx.send(response)
-        legacyLog.finishLog(ctx.invoked_with)
 
     @commands.command(name='hs')
     async def get_HS_percentage(self, ctx):
@@ -78,22 +64,6 @@ class GameCommands(commands.Cog):
             else:
                 response = elo
 
-        await ctx.send(response)
-        log.finishLog(ctx.invoked_with)
-
-    #To Do: borrar esta funcion cuando ya nadie la use
-    @commands.command(name='last_game')
-    async def get_last_game_player_data_deprecate(self, ctx,
-                                                  target_player: str = commands.parameter(default=None, description="nombre o agente del jugador cuyos datos quieres saber"), 
-                                                  target_team: str= commands.parameter(default=None, description="OPCIONAL. Equipo donde quieres buscar al agente en cuestion (ally/enemy). No necesario en caso de busqueda por nombre. Si no se especifica y el mismo agente se jugo en ambos equipos se da por defecto el jugador rival")):
-        """
-            Informacion de un jugador de tu ultima partida. Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
-
-            !last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando
-            """
-        log.startLog()
-        await self.get_last_game_player_data(ctx, target_player= target_player, target_team= target_team)
-        response = f"!last_game no esta continuado y se eliminará en futuras versiones en favor de !lg, considera usar ya el nuevo comando"
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
 
@@ -183,20 +153,6 @@ class GameCommands(commands.Cog):
             response = peakElo
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
-
-    #To Do: borrar esta funcion cuando ya nadie la use
-    @commands.command(name='Mariano')
-    async def get_mariano_percentage_deprecate(self, ctx):
-        """
-            Porcentaje de victorias del gran Mariano
-            !Mariano no esta continuado y se eliminará en futuras versiones en favor de !mariano, considera usar ya el nuevo comando
-            """
-        legacyLog = PiumPiumBot_Log()
-        legacyLog.startLog()
-        await self.get_mariano_percentage(ctx)
-        response = f"!Mariano no esta continuado y se eliminará en futuras versiones en favor de !mariano, considera usar ya el nuevo comando"
-        await ctx.send(response)
-        legacyLog.finishLog(ctx.invoked_with)
 
     @commands.command(name='mariano')
     async def get_mariano_percentage(self, ctx):
