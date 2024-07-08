@@ -3,7 +3,8 @@ import discord
 import logging
 from os.path import isfile
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
-from valorantFDS import get_last_match_HS_percentage, get_player_data, get_mariano_lost_percentage, get_this_season_elo, get_target_wr, get_avg_elo, peak_elo, get_last_match_data, RoulettePool
+from valorantFDS import RoulettePool
+import valorantFDS as valorant
 from PiumPiumBot_ErrorCodes import ErrorCodes
 
 errorCodeList = ErrorCodes()
@@ -44,12 +45,12 @@ class GameCommands(commands.Cog):
         "Porcentaje de headshot de tu ultima partida"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         else:
-            HS_accuracy = get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
+            HS_accuracy = valorant.get_last_match_HS_percentage(region= player['region'], name= player['name'], tag= player['tag'])
             errorCode = errorCodeList.handleErrorCode(HS_accuracy)
             if(errorCode != None):
                 response = errorCode
@@ -65,12 +66,12 @@ class GameCommands(commands.Cog):
         "Tu elo actual"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         else:
-            elo = get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
+            elo = valorant.get_this_season_elo(region= player['region'], name= player['name'], tag= player['tag'])
             errorCode = errorCodeList.handleErrorCode(elo)
             if(errorCode != None):
                 response = errorCode
@@ -103,12 +104,12 @@ class GameCommands(commands.Cog):
         "Informacion de un jugador de tu ultima partida. Ejemplos: !lg IMissHer !lg Sova enemy !lg Jett"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         else:
-            lg_response = get_last_match_data(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, target_team= target_team)
+            lg_response = valorant.get_last_match_data(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, target_team= target_team)
             errorCode = errorCodeList.handleErrorCode(lg_response)
             if(errorCode != None):
                 response = errorCode
@@ -127,12 +128,12 @@ class GameCommands(commands.Cog):
         else:
             #Process the request
             author = ctx.message.author
-            player = get_player_data(player=author)
+            player = valorant.get_player_data(player=author)
             errorCode = errorCodeList.handleErrorCode(player)
             if(errorCode != None):
                 response = errorCode
             else:
-                wr = get_target_wr(region= player['region'], name= player['name'], tag= player['tag'], target= target)
+                wr = valorant.get_target_wr(region= player['region'], name= player['name'], tag= player['tag'], target= target)
                 errorCode = errorCodeList.handleErrorCode(wr)
                 if(errorCode != None):
                     response = errorCode
@@ -147,12 +148,12 @@ class GameCommands(commands.Cog):
         "Elo medio de cada equipo de tu ultima partida"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         else:
-            avg_elo = get_avg_elo(region= player['region'], name= player['name'], tag= player['tag'])
+            avg_elo = valorant.get_avg_elo(region= player['region'], name= player['name'], tag= player['tag'])
             errorCode = errorCodeList.handleErrorCode(avg_elo)
             if(errorCode != None):
                 response = errorCode
@@ -169,12 +170,12 @@ class GameCommands(commands.Cog):
         "Elo maximo que ha alcanzado cualquier jugador de tu ultima partida. Ejemplos: !peak IMissHer !peak Sova enemy !peak Jett"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
         #Check first given command
-        peakElo = peak_elo(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, targetTeam= target_team)
+        peakElo = valorant.peak_elo(region= player['region'], name= player['name'], tag= player['tag'], target_player= target_player, targetTeam= target_team)
         errorCode = errorCodeList.handleErrorCode(peakElo)
         if(errorCode != None):
             response = errorCode
@@ -201,7 +202,7 @@ class GameCommands(commands.Cog):
     async def get_mariano_percentage(self, ctx):
         "Porcentaje de victorias del gran Mariano"
         log.startLog()
-        mariano_win_percentage = get_mariano_lost_percentage()
+        mariano_win_percentage = valorant.get_mariano_lost_percentage()
         errorCode = errorCodeList.handleErrorCode(mariano_win_percentage)
         if(errorCode != None):
             response = errorCode
@@ -216,7 +217,7 @@ class GameCommands(commands.Cog):
         "Te asigna un agente aleatorio"
         log.startLog()
         author = ctx.message.author
-        player = get_player_data(player=author)
+        player = valorant.get_player_data(player=author)
         errorCode = errorCodeList.handleErrorCode(player)
         if(errorCode != None):
             response = errorCode
