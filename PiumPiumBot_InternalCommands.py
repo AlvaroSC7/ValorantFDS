@@ -2,7 +2,7 @@ from discord.ext import commands
 import json
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
 from PiumPiumBot_ErrorCodes import ErrorCodes
-from valorantFDS import get_puuid
+import valorantFDS as valorant
 
 config = PiumPiumBot_Config()
 errorCode = ErrorCodes()
@@ -69,7 +69,7 @@ class InternalCommands(commands.Cog):
             Returns:
                 Response: String with the confirmation (or error message) of the data storage.
             """
-        puuid = get_puuid(region= region, name= name, tag= tag)
+        puuid = valorant.get_puuid(region= region, name= name, tag= tag)
         if(errorCode.isErrorCode(puuid) == True):
             puuid = None
             response = f"Datos de {str(discord)} guardados. No se ha podido obtener el puuid del jugador, revisa que el nombre y tag introducidos esten bien"

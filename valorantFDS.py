@@ -51,7 +51,6 @@ class RoulettePool:
 
 
 #To Do: implement snowflake
-#To Do: encapsulate all functions within a class
 
 ##################################################################
 #                         EXTERNAL FUNCTIONS                     #
@@ -475,7 +474,6 @@ def _get_target_type(target: str) -> str:
     
     return targetType
 
-#To Do: use this function in all the places it was hardcoded
 def _get_player_and_opposite_team(matchData: json,name: str, jsonVersion: str) -> tuple:
         """
         Get the team a player was playing on in a certain json v3.
