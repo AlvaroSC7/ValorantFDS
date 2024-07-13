@@ -1,8 +1,11 @@
-from PiumPiumBot_Config import PiumPiumBot_Config
 import re
 import os
 import zipfile
 import json
+import sys
+parentDir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0,parentDir)
+from PiumPiumBot_Config import PiumPiumBot_Config
 
 bot = PiumPiumBot_Config()
 
