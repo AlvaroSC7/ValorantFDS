@@ -132,6 +132,29 @@ def get_last_match_data(region: str,name: str,tag: str,target_player: str, targe
                 response = _build_last_game_response(name= target_player, elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
     return response
 
+def get_any_player_info(region: str,name: str,tag: str) -> str:
+    """
+        Get elo and peak elo of any player.
+
+        Parameters:
+            region  (str):  Region of the player
+            name    (str):  Account name
+            tag     (str):  Account tag
+        Returns:
+            Response: Response with the player data
+        """
+    allElo = _get_all_elo_v2(region= region, name= name, tag= tag)
+    if(errorCode.isErrorCode(allElo) == True):
+        response = errorCode.handleErrorCode(allElo)
+    else:
+        if(allElo['rank'] == None or allElo['elo'] == None):
+            eloStr = "Unranked"
+        else:
+            eloStr = f"{allElo['rank']} - {allElo['elo']}"
+        peakEloDate = _build_peak_elo_date(allElo['peakEloDate'])
+        response = _build_last_game_response(name= name, elo= eloStr, hs= None, peak= (allElo['peakElo'], peakEloDate))
+    return response
+
 def get_player_data(player: str) -> dict:
     """
         Get Valorant user data depending on Discord user data.
@@ -324,8 +347,7 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
                 if(targetData['peakElo'] == "Unranked"):
                     response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}"
                 else:
-                    peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
-                    peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
+                    peakDate = _build_peak_elo_date(targetData['peakEloDate'])
                     response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
         else:   #Can be an error or just a player name
             #Get elo and HS of the selected player
@@ -337,8 +359,7 @@ def peak_elo(region: str,name: str,tag: str, target_player: str, targetTeam: str
                 if(targetData['peakElo'] == "Unranked"):
                     response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}"
                 else:
-                    peakDate = re.sub("e","Temporada ",targetData['peakEloDate'])
-                    peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",peakDate)
+                    peakDate = _build_peak_elo_date(targetData['peakEloDate'])
                     response = f"{targetData['name']}" + f"\n\t{targetData['peakElo']}" + f"\n\tFecha: {peakDate}"
     return response
 
@@ -825,6 +846,33 @@ def _get_peak_elo(region: str,name: str,tag: str) -> tuple:
         highestRankDate = eloData['data']['highest_rank']['season']
         return highestRank, highestRankDate
     
+def _get_all_elo_v2(region: str,name: str,tag: str) -> dict:
+    """
+    Get elo and peak rank for a player using a single v2 API call
+    Parameters:
+        region      (str):  Player region
+        name        (str):  Player user name
+        tag         (str):  Player tag
+    Returns:
+        Response: Dictionary with the player's full elo data
+    """
+    #Get last match data
+    puuid = get_puuid(region=region,name=name,tag=tag)
+    elo_request = api.get_by_puuid_mmr_v2(region=region,puuid= puuid)
+    #Parse data
+    eloData = elo_request.json()
+    _save_json(eloData,jsonName= "_get_all_elo_v2")
+    #Check if player has changed its name
+    if(eloData['status'] != 200):
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+        return errorCode.ERR_CODE_100
+    else:
+        highestRank = eloData['data']['highest_rank']['patched_tier']
+        highestRankDate = eloData['data']['highest_rank']['season']
+        elo = eloData['data']['current_data']['elo']
+        rank = eloData['data']['current_data']['currenttierpatched']
+        return {'elo': elo, 'rank': rank, 'peakElo': highestRank, 'peakEloDate': highestRankDate}
+    
 def _get_last_match_agent_peak_elo(region: str,name: str,tag: str,targetAgent: str,targetTeam: str= None) -> dict:
     """
         Get target player highest elo ever and when this was given the character he/she was playing in the last game.
@@ -1206,8 +1254,7 @@ def _extract_last_game_info(region: str, name: str, tag: str, mode_id: str) -> s
             if(target_peak[0] == "Unranked"):
                     result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], None]}
             else:
-                targetPeakDate = re.sub("e","Temporada ",target_peak[1])
-                targetPeakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ",targetPeakDate)
+                targetPeakDate = _build_peak_elo_date(target_peak[1])
                 result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
             return result
         
@@ -1232,6 +1279,21 @@ def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
     else:
         response = f"{name}" + f"\n\t{elo}" + peakElo
     return response
+
+def _build_peak_elo_date(peakDateAPI: str) -> str:
+    """
+        Converts the peak elo date string given by the API into the readable response of the bot. 
+        Parameters:
+            peakDate    (str):  Peak elo date given by the API  
+        Returns:
+            Response: String with the date in a more readable way
+        """
+    if(peakDateAPI == None):
+        peakDate = None #Unrated player
+    else:
+        peakDate = re.sub("e","Temporada ", peakDateAPI)
+        peakDate = re.sub("(?<=[0-9])a(?=[0-9])"," Acto  ", peakDate)
+    return peakDate
 
 def main():
     name = "SpaguettiCoded"

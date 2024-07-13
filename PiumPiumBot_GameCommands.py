@@ -200,6 +200,20 @@ class GameCommands(commands.Cog):
                 await ctx.send(file= discord.File(gifFile))
         log.finishLog(ctx.invoked_with)
 
+    @commands.command(name='player')
+    async def get_player_data(self, ctx,
+                                    player: str= commands.parameter(default=None, description="Nombre del jugador"),
+                                    tag: str= commands.parameter(default=None, description="Tag del jugador"),
+                                    region: str= commands.parameter(default="eu", description="Region del jugador. Si no se escribe se interpreta como eu")):
+        "Datos de un jugador cualquiera. Requiere tag"
+        log.startLog()
+        if(player == None or tag == None):
+            response = errorCodeList.handleErrorCode(errorCodeList.ERR_CODE_122)
+        else:
+            response = valorant.get_any_player_info(region= region, name= player, tag= tag)
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
     def bot_reset_roulette():
         "Function to be called periodically to reset automatically roulette pool"
         if(len(roulette.pool) < roulette.totalPoolSize):
