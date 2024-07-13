@@ -50,8 +50,6 @@ class RoulettePool:
             return agent
 
 
-#To Do: implement snowflake
-
 ##################################################################
 #                         EXTERNAL FUNCTIONS                     #
 ##################################################################

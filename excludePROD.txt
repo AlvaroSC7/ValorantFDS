@@ -1,5 +1,4 @@
 .gitignore
 __init__.py
 excludePROD.txt
-PiumPiumBot_deployToHost.py
 README.md
