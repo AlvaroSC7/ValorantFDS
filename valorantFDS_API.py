@@ -1,11 +1,14 @@
 import requests
 from PiumPiumBot_Config import PiumPiumBot_Config
 
+# To Do: Investigar v4 API
+
+
 class ValorantFDS_API:
     def __init__(self):
         self.general_url = "https://api.henrikdev.xyz/valorant/"
 
-    def get_lifetime_matches(self,region: str,name: str,tag: str,mode: str=None,map: str=None,page: int=None,size: int=None):
+    def get_lifetime_matches(self, region: str, name: str, tag: str, mode: str = None, map: str = None, page: int = None, size: int = None):
         """
         Get Valorant lifetime matches stat for a player.
 
@@ -16,7 +19,7 @@ class ValorantFDS_API:
             mode    (str):  Game mode of the matches. Options: competitive unrated deathmatch ... OPTIONAL
             map     (str):  The map name. Starts with capital letters. OPTIONAL
             page    (int):  Page size used for indentation. OPTIONAL
-            size    (int):  Number of returned matches. OPTIONAL 
+            size    (int):  Number of returned matches. OPTIONAL
         Returns:
             Response: The HTTP response containing the player matches.
         """
@@ -24,8 +27,8 @@ class ValorantFDS_API:
         url = self.general_url + f"v1/lifetime/matches/{region}/{name}/{tag}"
         params = {'mode': mode, 'map': map, 'page': page, 'size': size}
         return self._send_request(url, params)
-    
-    def get_lifetime_matches_by_matchId(self,matchId: str):
+
+    def get_lifetime_matches_by_matchId(self, matchId: str):
         """
         Get Valorant lifetime matches stat for a player.
 
@@ -37,8 +40,8 @@ class ValorantFDS_API:
 
         url = self.general_url + f"v2/match/{matchId}"
         return self._send_request(url)
-    
-    def get_v3_matches(self,region: str,name: str,tag: str):
+
+    def get_v3_matches(self, region: str, name: str, tag: str):
         """
         Get Valorant last match of a player in detail.
 
@@ -52,8 +55,8 @@ class ValorantFDS_API:
 
         url = self.general_url + f"v3/matches/{region}/{name}/{tag}"
         return self._send_request(url)
-    
-    def get_content(self,locale: str=None):
+
+    def get_content(self, locale: str = None):
         """
         Get all Valorant native content (maps, agents, skins etc...).
 
@@ -63,11 +66,11 @@ class ValorantFDS_API:
             Response: The HTTP response containing the content.
         """
 
-        url = self.general_url + f"v1/content"
+        url = self.general_url + "v1/content"
         params = {'locale': locale}
-        return self._send_request(url,params= params)
-    
-    def get_esports_schedule(self,region: str=None, league: str= None):
+        return self._send_request(url, params= params)
+
+    def get_esports_schedule(self, region: str = None, league: str = None):
         """
         Get all esports competitions information.
 
@@ -78,11 +81,11 @@ class ValorantFDS_API:
             Response: The HTTP response containing the content.
         """
 
-        url = self.general_url + f"v1/esports/schedule"
+        url = self.general_url + "v1/esports/schedule"
         params = {'region': region, 'league': league}
-        return self._send_request(url,params= params)
-        
-    def get_this_season_elo_api(self,region: str,name: str,tag: str):
+        return self._send_request(url, params= params)
+
+    def get_this_season_elo_api(self, region: str, name: str, tag: str):
         """
         Get player elo in the active season
 
@@ -96,8 +99,8 @@ class ValorantFDS_API:
 
         url = self.general_url + f"v1/mmr/{region}/{name}/{tag}"
         return self._send_request(url)
-    
-    def get_by_puuid_mmr_v2(self,region: str, puuid: str, season: str= None):
+
+    def get_by_puuid_mmr_v2(self, region: str, puuid: str, season: str = None):
         """
         Get player elo in every season using puuid as input
 
@@ -125,11 +128,11 @@ class ValorantFDS_API:
         """
         config = PiumPiumBot_Config()
         path = config.PRIVATE_PATH + "/ValorantAPIKey.txt"
-        apiKeyFile = open(path,"r")
+        apiKeyFile = open(path, "r")
         apiKey = apiKeyFile.read()
         return apiKey
-    
-    def _send_request(self, url: str, params: str=None):
+
+    def _send_request(self, url: str, params: str = None):
         """
         Send request to the given url
 
@@ -146,7 +149,7 @@ class ValorantFDS_API:
         }
 
         try:
-            response = requests.get(url, headers=headers,params= params)
+            response = requests.get(url, headers=headers, params= params)
             response.raise_for_status()
             return response
         except requests.exceptions.HTTPError as http_err:
