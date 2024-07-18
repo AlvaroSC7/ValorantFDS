@@ -10,6 +10,13 @@
             "request": "launch",
             "program": "C:\\ASC\\Programacion\\Valorant_Tracker\\ValorantFDS\\PiumPiumBot.py",
             "console": "integratedTerminal",
+        },
+        {
+            "name": "CodeAnalysis",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "C:\\ASC\\Programacion\\Valorant_Tracker\\ValorantFDS\\tools\\PiumPiumBot_CodeAnalysis.py",
+            "console": "integratedTerminal",
         }
     ]
 }

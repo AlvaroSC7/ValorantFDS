@@ -4,10 +4,11 @@ from PiumPiumBot_Config import PiumPiumBot_Log
 
 log = PiumPiumBot_Log()
 
+
 class Esports(commands.Cog):
     "Commands related to Esports competitions"
 
-    #To Do: investigar logos en el mensaje
+    # To Do: investigar logos en el mensaje
     @commands.command(name='emea')
     async def get_emea(self, ctx):
         "Informacion de la VCT EMEA"
