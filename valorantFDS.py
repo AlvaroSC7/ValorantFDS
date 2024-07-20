@@ -446,12 +446,12 @@ def get_vct(competition: str, team: str = None) -> str:
                 if (team is None or game['match']['teams'][0]['code'] == team or game['match']['teams'][1]['code'] == team):
                     # All teams requested or exactly a match of the requested team
                     if (game['state'] == "completed"):
-                        if(completedGamesFlag is False):
+                        if (completedGamesFlag is False):
                             result = result + "\nUltimos partidos:"
                             completedGamesFlag = True
                         result = result + f"\n\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
                     elif (game['state'] == "unstarted"):
-                        if(nextGamesFlag is False):
+                        if (nextGamesFlag is False):
                             result = result + "\nProximos partidos:"
                             nextGamesFlag = True
                         result = result + "\n\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
@@ -1389,7 +1389,7 @@ def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
             team        (str):  If this parameter is provided, only this team information will be given as answer. If it is skipped, all league information is given
         Returns:
             Response: String with the requested live match information
-        """
+        """     # noqa: E501 - Documentation only. Readable enough
     # Get last match data
     esport_request = vlrgg.get_matches(matchStatus= "live_score")
     # Parse data
@@ -1404,27 +1404,29 @@ def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
     except KeyError:
         errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esport_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
-    
 
-    emeaWrapper = {"FUT": "FUT Esports", "TH": "Team Heretics", "FNC": "FNATIC", "NAVI": "Natus Vincere", "KC": "Karmine Corp", "VIT": "Team Vitality", "TL": "Team Liquid", "BBL": "BBL Esports", "M8": "Gentle Mates", "KOI": "KOI", "GX": "GIANTX"}
-    naWrapper = {"LEV": "Leviatán", "KRU": "KRU Esports", "C9": "Cloud9", "SEN": "Sentinels", "G2": "G2 Esports", "100T": "100 Thieves", "EG": "Evil Geniuses", "NRG": "NRG Esports", "LOUD": "LOUD", "FURIA": "FURIA", "MIBR": "MIBR"}
+    emeaWrapper = {"FUT": "FUT Esports", "TH": "Team Heretics", "FNC": "FNATIC", "NAVI": "Natus Vincere", "KC": "Karmine Corp",
+                   "VIT": "Team Vitality", "TL": "Team Liquid", "BBL": "BBL Esports", "M8": "Gentle Mates", "KOI": "KOI", "GX": "GIANTX"}
+    naWrapper = {"LEV": "Leviatán", "KRU": "KRU Esports", "C9": "Cloud9", "SEN": "Sentinels", "G2": "G2 Esports", "100T": "100 Thieves",
+                 "EG": "Evil Geniuses", "NRG": "NRG Esports", "LOUD": "LOUD", "FURIA": "FURIA", "MIBR": "MIBR"}
     pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G"}
     teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper}
     requestedTeam = []
-    if(team is None):
+    if (team is None):
         requestedTeam = teamWrapper[competition].values()
     else:
         requestedTeam.append(teamWrapper[competition][team])
     mapNumber = ["Primer", "Segundo", "Tercer", "Cuarto", "Quinto"]
-    
+
     for game in esportData['data']['segments']:
         if (game['team1'] in requestedTeam or game['team2'] in requestedTeam):
             mapsPlayed = int(game['score1'] + game['score2'])
             team1Score, team2Score = _get_vlrgg_rounds_score(game= game)
             return f"En juego ahora mismo\n\t{game['team1']} {game['score1']}-{game['score2']} {game['team2']}\n\t{mapNumber[mapsPlayed]} mapa: {team1Score} - {team2Score}"     # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
-    
+
     # If code is here no game was found the two selected teams
     return ""
+
 
 def _get_vlrgg_rounds_score(game: dict) -> tuple:
     """
@@ -1435,10 +1437,10 @@ def _get_vlrgg_rounds_score(game: dict) -> tuple:
         Returns:
             Response: Tuple with the total number of rounds of each team
         """
-    team1_round_ct = int(re.sub("N/A","0",game['team1_round_ct']))
-    team1_round_t = int(re.sub("N/A","0",game['team1_round_t']))
-    team2_round_ct = int(re.sub("N/A","0",game['team2_round_ct']))
-    team2_round_t = int(re.sub("N/A","0",game['team2_round_t']))
+    team1_round_ct = int(re.sub("N/A", "0", game['team1_round_ct']))
+    team1_round_t = int(re.sub("N/A", "0", game['team1_round_t']))
+    team2_round_ct = int(re.sub("N/A", "0", game['team2_round_ct']))
+    team2_round_t = int(re.sub("N/A", "0", game['team2_round_t']))
     team1_score = team1_round_ct + team1_round_t
     team2_score = team2_round_ct + team2_round_t
     return team1_score, team2_score

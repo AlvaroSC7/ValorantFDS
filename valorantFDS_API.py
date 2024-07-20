@@ -159,6 +159,7 @@ class ValorantFDS_API:
             print(f"Error retrieving matches: {req_err}")
             return None
 
+
 class vlrgg_API:
     def __init__(self):
         self.general_url = "https://vlrggapi.vercel.app/"
@@ -176,7 +177,7 @@ class vlrgg_API:
         url = "https://vlrggapi.vercel.app/" + "match"
         params = {'q': matchStatus}
         return self._send_request(url, params= params)
-    
+
     def _send_request(self, url: str, params: str = None):
         """
         Send request to the given url

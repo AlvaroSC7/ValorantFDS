@@ -66,15 +66,15 @@ class Esports(commands.Cog):
         log.finishLog(ctx.invoked_with)
 
     @commands.command(name='drx')
-    async def get_sen(self, ctx):
+    async def get_drx(self, ctx):
         "Informacion de DRX"
         log.startLog()
         response = valorant.get_vct("vct_pacific", "DRX")
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
-    
+
     @commands.command(name='pacific')
-    async def get_na(self, ctx):
+    async def get_pacific(self, ctx):
         "Informacion de la VCT Pacific"
         log.startLog()
         response = valorant.get_vct("vct_pacific")
