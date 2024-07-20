@@ -1,11 +1,12 @@
 import json
 import re
 from random import choice
-from valorantFDS_API import ValorantFDS_API
+from valorantFDS_API import ValorantFDS_API, vlrgg_API
 from PiumPiumBot_Config import PiumPiumBot_Config
 from PiumPiumBot_ErrorCodes import ErrorCodes
 
 api = ValorantFDS_API()
+vlrgg = vlrgg_API()
 bot = PiumPiumBot_Config()
 errorCode = ErrorCodes()
 
@@ -78,13 +79,15 @@ def get_last_match_HS_percentage(region: str, name: str, tag: str) -> float:
     # Parse data
     matchData = matches_request.json()
     _save_json(matchData, jsonName= "get_last_match_HS_percentage")
-
-    # Check if player has changed its name
-    if (matchData['status'] != 200):
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
+    try:
+        if (matchData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
+            return errorCode.ERR_CODE_100
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matches_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
 
-    elif (len(matchData['data']) == 0):
+    if (len(matchData['data']) == 0):
         errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
         return errorCode.ERR_CODE_101
     elif (matchData['data'][0]['meta']['mode'] == "Deathmatch"):  # RIOT does not track HS in DMs
@@ -401,10 +404,12 @@ def get_vct(competition: str, team: str = None) -> str:
                              "challengers_italy", "challengers_portugal"]
     teams_emea = ["FUT", "TH", "FNC", "NAVI", "KC", "VIT", "TL", "BBL", "M8", "KOI", "GX"]
     teams_na = ["LEV", "KRU", "C9", "SEN", "G2", "100T", "EG", "NRG", "LOUD", "FURIA", "MIBR"]
+    teams_pacific = ["DRX", "PRX", "GEN"]
     for comp in availableCompetitions:
         available_teams = {comp: []}
     available_teams['vct_emea'] = teams_emea
     available_teams['vct_americas'] = teams_na
+    available_teams['vct_pacific'] = teams_pacific
     # Check if competition is known
     if (competition not in availableCompetitions):
         return errorCode.handleErrorCode(errorCode.ERR_CODE_111)
@@ -419,27 +424,37 @@ def get_vct(competition: str, team: str = None) -> str:
         esportData = esport_request.json()
         _save_json(esportData, jsonName= "get_vct")
 
-        # Check if player has changed its name
-        if (esportData['status'] != 200):
-            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esportData['status'])
+        # Check API response status
+        try:
+            if (esportData['status'] != 200):
+                errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esportData['status'])
+                return errorCode.ERR_CODE_100
+        except KeyError:
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esport_request)    # API returns error code if request went wrong
             return errorCode.ERR_CODE_100
 
         if (len(esportData['data']) == 0):
             errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
             return errorCode.ERR_CODE_101
         else:
-            result = ""
+            result = _get_vlrgg_live_game(competition= competition, team= team)
+            completedGamesFlag = False
+            nextGamesFlag = False
             for game in esportData['data']:
                 if (len(game['match']['teams']) == 0):
                     continue    # Game data just updated to In Progress, API needs a minute to record teams information
                 if (team is None or game['match']['teams'][0]['code'] == team or game['match']['teams'][1]['code'] == team):
                     # All teams requested or exactly a match of the requested team
                     if (game['state'] == "completed"):
-                        result = result + f"{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
-                    elif (game['state'] == "inProgress"):
-                        result = result + f"{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "  En juego ahora mismo" + "\n"     # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
-                    else:
-                        result = result + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                        if(completedGamesFlag is False):
+                            result = result + "\nUltimos partidos:"
+                            completedGamesFlag = True
+                        result = result + f"\n\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                    elif (game['state'] == "unstarted"):
+                        if(nextGamesFlag is False):
+                            result = result + "\nProximos partidos:"
+                            nextGamesFlag = True
+                        result = result + "\n\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
             # Check if there is any data of the selected team or competition
             if (result == ""):
                 result = errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_104)
@@ -465,10 +480,13 @@ def get_puuid(region: str, name: str, tag: str) -> str:
     _save_json(matchData, jsonName= "get_puuid")
 
     # Check if player has changed its name
-    if (matchData['status'] != 200):
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
+    try:
+        if (matchData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matchData['status'])
+            return errorCode.ERR_CODE_100
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= matches_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
-
     if (len(matchData['data']) == 0):
         errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_101)
         return errorCode.ERR_CODE_101
@@ -722,9 +740,12 @@ def _get_elo(region: str, name: str, tag: str) -> tuple:
     eloData = elo_request.json()
     _save_json(eloData, jsonName= "_get_elo")
 
-    # Check if player has changed its name
-    if (eloData['status'] != 200):   # To Do: add this check to every API call
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+    try:
+        if (eloData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+            return errorCode.ERR_CODE_100
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= elo_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
 
     # Player has a competitive rank
@@ -879,14 +900,17 @@ def _get_peak_elo(region: str, name: str, tag: str) -> tuple:
     eloData = elo_request.json()
     _save_json(eloData, jsonName= "_get_peak_elo")
 
-    # Check if player has changed its name
-    if (eloData['status'] != 200):
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+    try:
+        if (eloData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+            return errorCode.ERR_CODE_100
+        else:
+            highestRank = eloData['data']['highest_rank']['patched_tier']
+            highestRankDate = eloData['data']['highest_rank']['season']
+            return highestRank, highestRankDate
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= elo_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
-    else:
-        highestRank = eloData['data']['highest_rank']['patched_tier']
-        highestRankDate = eloData['data']['highest_rank']['season']
-        return highestRank, highestRankDate
 
 
 def _get_all_elo_v2(region: str, name: str, tag: str) -> dict:
@@ -905,16 +929,20 @@ def _get_all_elo_v2(region: str, name: str, tag: str) -> dict:
     # Parse data
     eloData = elo_request.json()
     _save_json(eloData, jsonName= "_get_all_elo_v2")
-    # Check if player has changed its name
-    if (eloData['status'] != 200):
-        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+
+    try:
+        if (eloData['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= eloData['status'])
+            return errorCode.ERR_CODE_100
+        else:
+            highestRank = eloData['data']['highest_rank']['patched_tier']
+            highestRankDate = eloData['data']['highest_rank']['season']
+            elo = eloData['data']['current_data']['elo']
+            rank = eloData['data']['current_data']['currenttierpatched']
+            return {'elo': elo, 'rank': rank, 'peakElo': highestRank, 'peakEloDate': highestRankDate}
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= elo_request)    # API returns error code if request went wrong
         return errorCode.ERR_CODE_100
-    else:
-        highestRank = eloData['data']['highest_rank']['patched_tier']
-        highestRankDate = eloData['data']['highest_rank']['season']
-        elo = eloData['data']['current_data']['elo']
-        rank = eloData['data']['current_data']['currenttierpatched']
-        return {'elo': elo, 'rank': rank, 'peakElo': highestRank, 'peakEloDate': highestRankDate}
 
 
 def _get_last_match_agent_peak_elo(region: str, name: str, tag: str, targetAgent: str, targetTeam: str = None) -> dict:
@@ -1236,8 +1264,8 @@ def _translate_date(date: str) -> str:
     year = int(re.findall("^[0-9]{4}", date)[0])
     month = int(re.findall("(?<=-)[0-9]{2}(?=-)", date)[0])
     day = int(re.findall("(?<=-)[0-9]{2}(?!-)", date)[0])
-    hour = int(re.findall("(?<=[A-Z]{1})[0-9]{2}(?=:[0-9]{2})", date)[0])
-    minutes = re.findall("(?<=[A-Z]{1}[0-9]{2}:)[0-9]{2}(?=:[0-9]{2})", date)[0]
+    hour = int(re.findall("(?<=[0-9]{2})[0-9]{2}(?=:[0-9]{2}:)", date)[0])
+    minutes = re.findall("(?<=[0-9]{2}[0-9]{2}:)[0-9]{2}(?=:[0-9]{2})", date)[0]
     # Time zone adjustment
     hour = hour + 2
     if (hour >= 24):
@@ -1350,6 +1378,70 @@ def _build_peak_elo_date(peakDateAPI: str) -> str:
         peakDate = re.sub("e", "Temporada ", peakDateAPI)
         peakDate = re.sub("(?<=[0-9])a(?=[0-9])", " Acto  ", peakDate)
     return peakDate
+
+
+def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
+    """
+        Get live VCT matches information from vlr.gg.
+
+        Parameters:
+            competition (str):  Name of the competition which information is going to be extracted
+            team        (str):  If this parameter is provided, only this team information will be given as answer. If it is skipped, all league information is given
+        Returns:
+            Response: String with the requested live match information
+        """
+    # Get last match data
+    esport_request = vlrgg.get_matches(matchStatus= "live_score")
+    # Parse data
+    esportData = esport_request.json()
+    _save_json(esportData, jsonName= "_get_vlrgg_live_game")
+    # Check API response status
+
+    try:
+        if (esportData['data']['status'] != 200):
+            errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esportData['data']['status'])
+            return errorCode.ERR_CODE_100
+    except KeyError:
+        errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_100, httpError= esport_request)    # API returns error code if request went wrong
+        return errorCode.ERR_CODE_100
+    
+
+    emeaWrapper = {"FUT": "FUT Esports", "TH": "Team Heretics", "FNC": "FNATIC", "NAVI": "Natus Vincere", "KC": "Karmine Corp", "VIT": "Team Vitality", "TL": "Team Liquid", "BBL": "BBL Esports", "M8": "Gentle Mates", "KOI": "KOI", "GX": "GIANTX"}
+    naWrapper = {"LEV": "Leviatán", "KRU": "KRU Esports", "C9": "Cloud9", "SEN": "Sentinels", "G2": "G2 Esports", "100T": "100 Thieves", "EG": "Evil Geniuses", "NRG": "NRG Esports", "LOUD": "LOUD", "FURIA": "FURIA", "MIBR": "MIBR"}
+    pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G"}
+    teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper}
+    requestedTeam = []
+    if(team is None):
+        requestedTeam = teamWrapper[competition].values()
+    else:
+        requestedTeam.append(teamWrapper[competition][team])
+    mapNumber = ["Primer", "Segundo", "Tercer", "Cuarto", "Quinto"]
+    
+    for game in esportData['data']['segments']:
+        if (game['team1'] in requestedTeam or game['team2'] in requestedTeam):
+            mapsPlayed = int(game['score1'] + game['score2'])
+            team1Score, team2Score = _get_vlrgg_rounds_score(game= game)
+            return f"En juego ahora mismo\n\t{game['team1']} {game['score1']}-{game['score2']} {game['team2']}\n\t{mapNumber[mapsPlayed]} mapa: {team1Score} - {team2Score}"     # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+    
+    # If code is here no game was found the two selected teams
+    return ""
+
+def _get_vlrgg_rounds_score(game: dict) -> tuple:
+    """
+        Get total number of rounds of each time in a vlr.gg game structure.
+
+        Parameters:
+            game    (dict): Dictionnary with the game data as provided by vlr.gg API
+        Returns:
+            Response: Tuple with the total number of rounds of each team
+        """
+    team1_round_ct = int(re.sub("N/A","0",game['team1_round_ct']))
+    team1_round_t = int(re.sub("N/A","0",game['team1_round_t']))
+    team2_round_ct = int(re.sub("N/A","0",game['team2_round_ct']))
+    team2_round_t = int(re.sub("N/A","0",game['team2_round_t']))
+    team1_score = team1_round_ct + team1_round_t
+    team2_score = team2_round_ct + team2_round_t
+    return team1_score, team2_score
 
 
 def main():
