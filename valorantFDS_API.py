@@ -158,3 +158,45 @@ class ValorantFDS_API:
         except requests.exceptions.RequestException as req_err:
             print(f"Error retrieving matches: {req_err}")
             return None
+
+
+class vlrgg_API:
+    def __init__(self):
+        self.general_url = "https://vlrggapi.vercel.app/"
+
+    def get_matches(self, matchStatus: str):
+        """
+        Get past, live or upcoming matches information from vlr.gg.
+
+        Parameters:
+            matchStatus (str):  Type of match to fetch: upcoming, live_score or results
+        Returns:
+            Response: The HTTP response containing the content.
+        """
+
+        url = "https://vlrggapi.vercel.app/" + "match"
+        params = {'q': matchStatus}
+        return self._send_request(url, params= params)
+
+    def _send_request(self, url: str, params: str = None):
+        """
+        Send request to the given url
+
+        Parameters:
+            url     (str):  URL where the petition will be sent
+            params  (str):  optional parameters for the request. Ignored if not given
+
+        Returns:
+            Response: API Response.
+        """
+
+        try:
+            response = requests.get(url, params= params)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP Error retrieving matches: {http_err}")
+            return http_err.response
+        except requests.exceptions.RequestException as req_err:
+            print(f"Error retrieving matches: {req_err}")
+            return None
