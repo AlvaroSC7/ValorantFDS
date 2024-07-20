@@ -1420,7 +1420,7 @@ def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
 
     for game in esportData['data']['segments']:
         if (game['team1'] in requestedTeam or game['team2'] in requestedTeam):
-            mapsPlayed = int(game['score1'] + game['score2'])
+            mapsPlayed = int(game['score1']) + int(game['score2'])
             team1Score, team2Score = _get_vlrgg_rounds_score(game= game)
             return f"En juego ahora mismo\n\t{game['team1']} {game['score1']}-{game['score2']} {game['team2']}\n\t{mapNumber[mapsPlayed]} mapa: {team1Score} - {team2Score}"     # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
 
