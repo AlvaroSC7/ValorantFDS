@@ -10,8 +10,6 @@ from PiumPiumBot_Config import PiumPiumBot_Config   # noqa: E402 - Sys path need
 bot = PiumPiumBot_Config()
 
 
-# To Do: Implement function to delete #To Do comments from PROD
-# To Do: Implement function to delete main from valorantFDS.py since it is only used for testing purposes
 def update_version(versionToIncrease: str) -> str:
     """
         Increase the selected version (major|minor|patch) of the PiumPiumBot and set version type to PROD.
@@ -79,9 +77,33 @@ def update_host(host):
         f.truncate()
 
 
-def main():
-    old_version = bot.version
+def prepare_code_for_prod() -> str:
     new_version = update_version("patch")
+    delete_main_functions()
+    return new_version
+
+
+def delete_main_functions():
+    excludeListFile = open(bot.WS_PATH + "/excludePROD.txt", "r")
+    excludeList = excludeListFile.read()
+    # Check all the files and folders in the folder
+    for file in os.listdir(bot.WS_PATH):
+        # Get only files
+        filePath = bot.WS_PATH + "/" + file
+        if (os.path.isfile(filePath)):
+            # Get only files needed for PROD
+            if (file not in excludeList and file != "PiumPiumBot.py"):
+                with open(filePath, "r") as f:
+                    code = f.read()
+                    code = re.sub(r"\ndef main\(\):((.|\n)*)", "", code)
+                # Overwrite new version
+                with open(filePath, "w") as f:
+                    f.write(code)
+                    f.truncate()
+
+
+def create_prod_packages(new_version: str):
+    old_version = bot.version
     # Open host list
     with open(bot.PRIVATE_PATH + '/hostList.json') as json_file:
         hostList = json.load(json_file)
@@ -94,6 +116,11 @@ def main():
         # Remove the old PROD version
         if (os.path.isfile(oldZipVersion)):
             os.remove(oldZipVersion)
+
+
+def main():
+    new_version = prepare_code_for_prod()
+    create_prod_packages(new_version= new_version)
 
 
 if __name__ == "__main__":
