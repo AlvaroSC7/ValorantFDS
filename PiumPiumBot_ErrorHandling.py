@@ -1,8 +1,23 @@
 from re import findall, search
 import inspect
 import logging
+import httplib2
+import os
+import oauth2client
+from oauth2client import client, tools
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from apiclient import errors, discovery
+import mimetypes
+from email.mime.image import MIMEImage
+from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from datetime import date, datetime
+from PiumPiumBot_Config import PiumPiumBot_Config
 
 logger = logging.getLogger(__name__)
+bot = PiumPiumBot_Config()
 
 
 class ErrorCodes:
@@ -24,7 +39,7 @@ class ErrorCodes:
         self.ERR_CODE_112 = "ERR_CODE_112"  # Esport team is unkwnown for esports command
         self.ERR_CODE_113 = "ERR_CODE_113"  # Internal bot files missing
         self.ERR_CODE_114 = "ERR_CODE_114"  # Missing multimedia files
-        self.ERR_CODE_115 = "ERR_CODE_115"
+        self.ERR_CODE_115 = "ERR_CODE_115"  # Error related to bug report mail account
         self.ERR_CODE_116 = "ERR_CODE_116"
         self.ERR_CODE_117 = "ERR_CODE_117"
         self.ERR_CODE_118 = "ERR_CODE_118"
@@ -150,6 +165,9 @@ class ErrorCodes:
         elif (errorCode == self.ERR_CODE_114):
             result = "No se han encontrado los archivos multimedia para esta peticion"
             logMessage = f"{calframe[3][3]}: {errorCode} - Internal gif or png file missing"
+        elif (errorCode == self.ERR_CODE_115):
+            result = "Error al mandar el correo a la cuenta de gmail asociada"
+            logMessage = f"{calframe[3][3]}: {errorCode} - Error while trying to send mail to bug report account"
         else:
             result = self._errorUnknownError()
 
@@ -193,3 +211,151 @@ class ErrorCodes:
         print(logMessage)
         logger.warning(logMessage)
         return "Error desconocido"
+
+
+class BugReport():
+    def __init__(self):
+        self.SCOPES = 'https://www.googleapis.com/auth/gmail.send'
+        self.CLIENT_SECRET_FILE = bot.PRIVATE_PATH + '/gmailCredentials.json'
+        self.APPLICATION_NAME = 'Gmail API Quickstart'
+
+    def _get_credentials(self):
+        home_dir = os.path.expanduser('~')
+        credential_dir = os.path.join(home_dir, '.credentials')
+        if not os.path.exists(credential_dir):
+            os.makedirs(credential_dir)
+        credential_path = os.path.join(credential_dir,
+                                       'gmail-python-email-send.json')
+        store = oauth2client.file.Storage(credential_path)
+        credentials = store.get()
+        if not credentials or credentials.invalid:
+            flow = client.flow_from_clientsecrets(self.CLIENT_SECRET_FILE, self.SCOPES)
+            flow.user_agent = self.APPLICATION_NAME
+            credentials = tools.run_flow(flow, store)
+            print('Storing credentials to ' + credential_path)
+        return credentials
+
+    def _SendMessage(self, sender, to, subject, msgHtml, attachmentFile=None):
+        credentials = self._get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('gmail', 'v1', http=http)
+        if attachmentFile:
+            message1 = self._createMessageWithAttachment(sender, to, subject, msgHtml, attachmentFile)
+        else:
+            message1 = self._CreateMessageHtml(sender, to, subject, msgHtml)
+        result = self._SendMessageInternal(service, "me", message1)
+        return result
+
+    def _SendMessageInternal(self, service, user_id, message):
+        try:
+            message = (service.users().messages().send(userId=user_id, body=message).execute())
+            return message
+        except errors.HttpError as error:
+            print('An error occurred: %s' % error)
+            return "Error"
+        return "OK"
+
+    def _CreateMessageHtml(self, sender, to, subject, msgHtml):
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = sender
+        msg['To'] = to
+        msg.attach(MIMEText(msgHtml, 'html'))
+        return {'raw': base64.urlsafe_b64encode(msg.as_string().encode()).decode()}
+
+    def _createMessageWithAttachment(self, sender, to, subject, msgHtml, attachmentFile):
+        """Create a message for an email.
+
+        Args:
+          sender: Email address of the sender.
+          to: Email address of the receiver.
+          subject: The subject of the email message.
+          msgHtml: Html message to be sent
+          attachmentFile: The path to the file to be attached.
+
+        Returns:
+          An object containing a base64url encoded email object.
+        """
+        message = MIMEMultipart('mixed')
+        message['to'] = to
+        message['from'] = sender
+        message['subject'] = subject
+
+        messageA = MIMEMultipart('alternative')
+        messageR = MIMEMultipart('related')
+
+        messageR.attach(MIMEText(msgHtml, 'html'))
+        messageA.attach(messageR)
+
+        message.attach(messageA)
+
+        print("create_message_with_attachment: file: %s" % attachmentFile)
+        content_type, encoding = mimetypes.guess_type(attachmentFile)
+
+        if content_type is None or encoding is not None:
+            content_type = 'application/octet-stream'
+        main_type, sub_type = content_type.split('/', 1)
+        if main_type == 'text':
+            fp = open(attachmentFile, 'rb')
+            msg = MIMEText(fp.read(), _subtype=sub_type)
+            fp.close()
+        elif main_type == 'image':
+            fp = open(attachmentFile, 'rb')
+            msg = MIMEImage(fp.read(), _subtype=sub_type)
+            fp.close()
+        elif main_type == 'audio':
+            fp = open(attachmentFile, 'rb')
+            msg = MIMEAudio(fp.read(), _subtype=sub_type)
+            fp.close()
+        else:
+            fp = open(attachmentFile, 'rb')
+            msg = MIMEBase(main_type, sub_type)
+            msg.set_payload(fp.read())
+            fp.close()
+        filename = os.path.basename(attachmentFile)
+        msg.add_header('Content-Disposition', 'attachment', filename=filename)
+        message.attach(msg)
+
+        return {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
+
+    def _getNumberOfBugs(self):
+        errorCode = ErrorCodes()
+        numberOfBugsPath = bot.TEMP_PATH + "/numberOfBugs.txt"
+        try:
+            with open(numberOfBugsPath, "r") as f:
+                nBugs = int(f.read())
+            newNBugs = nBugs + 1
+        except FileNotFoundError:
+            return errorCode.ERR_CODE_113
+
+        with open(numberOfBugsPath, "w") as f:
+            f.write(str(newNBugs))
+            f.truncate()
+        return newNBugs
+
+    def reportBug(self, discord: str, name: str, tag: str, description: str):
+        errorCode = ErrorCodes()
+        nBugs = self._getNumberOfBugs()
+        nBugsResponse = errorCode.handleErrorCode(nBugs)
+        if (nBugsResponse is not None):
+            return nBugsResponse    # Internal error, just return error response
+
+        to = bot.bugReportMail
+        sender = bot.bugReportMail
+        subject = f"Bug #{nBugs}"
+        now = datetime.now()
+        today = date.today()
+        msgHtml = f"""Discord user: {discord}<br/>VALORANT name: {name} #{tag}<br/>Date and time: {now.strftime('%d/%m/%Y %H:%M:%S')}<br/>
+        Version: {bot.version} - {bot.type}<br/>Host: {bot.host.url}<br/>Bug description: {description}"""
+
+        logFileName = bot.TEMP_PATH + f"/PiumPiumBot_{today.strftime("%d_%m_%Y")}.log"
+
+        if (os.path.isfile(logFileName)):
+            mailResponse = self._SendMessage(sender, to, subject, msgHtml, logFileName)
+        else:
+            mailResponse = self._SendMessage(sender, to, subject, msgHtml)
+
+        if (mailResponse == "Error"):
+            return errorCode.handleErrorCode(errorCode.ERR_CODE_115)
+        else:
+            return "Bug reportado correctamente. Gracias por tu feedback!"

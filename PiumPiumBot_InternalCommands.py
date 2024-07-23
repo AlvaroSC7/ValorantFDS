@@ -1,7 +1,7 @@
 from discord.ext import commands
 import json
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes, BugReport
 import valorantFDS as valorant
 
 config = PiumPiumBot_Config()
@@ -51,6 +51,19 @@ class InternalCommands(commands.Cog):
         log.startLog()
         author = str(ctx.message.author)
         response = self._remove_data(discord= author)
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
+    @commands.command(name='bug')
+    async def report_bug(self, ctx, *,
+                         description: str = commands.parameter(default=None, description="Explicacion del bug")):
+
+        "Reporta un bug a los desarrolladores de PiumPiumBot. !bug Explicacion completa"
+        log.startLog()
+        bug = BugReport()
+        author = str(ctx.message.author)
+        player = valorant.get_player_data(player=author)
+        response = bug.reportBug(discord= author, name= player['name'], tag= player['tag'], description= description)
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
 

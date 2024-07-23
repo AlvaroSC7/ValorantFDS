@@ -3,7 +3,7 @@ import re
 from random import choice
 from valorantFDS_API import ValorantFDS_API, vlrgg_API
 from PiumPiumBot_Config import PiumPiumBot_Config
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes
 
 api = ValorantFDS_API()
 vlrgg = vlrgg_API()
@@ -447,14 +447,14 @@ def get_vct(competition: str, team: str = None) -> str:
                     # All teams requested or exactly a match of the requested team
                     if (game['state'] == "completed"):
                         if (completedGamesFlag is False):
-                            result = result + "\nUltimos partidos:"
+                            result = result + "\n\nUltimos partidos:\n"
                             completedGamesFlag = True
-                        result = result + f"\n\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                        result = result + f"\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
                     elif (game['state'] == "unstarted"):
                         if (nextGamesFlag is False):
-                            result = result + "\nProximos partidos:"
+                            result = result + "\nProximos partidos:\n"
                             nextGamesFlag = True
-                        result = result + "\n\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                        result = result + "\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
             # Check if there is any data of the selected team or competition
             if (result == ""):
                 result = errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_104)
