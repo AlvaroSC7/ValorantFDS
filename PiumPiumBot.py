@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 import logging
 from datetime import date
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes
 from PiumPiumBot_Config import PiumPiumBot_Config
 from PiumPiumBot_Esports import Esports
 from PiumPiumBot_InternalCommands import InternalCommands

@@ -5,7 +5,7 @@ from os.path import isfile
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
 from valorantFDS import RoulettePool
 import valorantFDS as valorant
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes
 
 errorCodeList = ErrorCodes()
 logger = logging.getLogger(__name__)
