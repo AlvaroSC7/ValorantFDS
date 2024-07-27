@@ -129,7 +129,8 @@ def get_last_match_data(region: str, name: str, tag: str, target_player: str, ta
             if (returnedErrorCode is not None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= targetData['name'], elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
+                response = _build_last_game_response(name= targetData['name'], tag= targetData['tag'],
+                                                     elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
         else:   # It can be an error or just a player name
             # Get elo and HS of the selected player
             targetData = _get_last_match_player_data(region= region, name= name, tag= tag, targetName= target_player)
@@ -137,7 +138,8 @@ def get_last_match_data(region: str, name: str, tag: str, target_player: str, ta
             if (returnedErrorCode is not None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= target_player, elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
+                response = _build_last_game_response(name= target_player, tag= targetData['tag'],
+                                                     elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
     return response
 
 
@@ -161,7 +163,7 @@ def get_any_player_info(region: str, name: str, tag: str) -> str:
         else:
             eloStr = f"{allElo['rank']} - {allElo['elo']}"
         peakEloDate = _build_peak_elo_date(allElo['peakEloDate'])
-        response = _build_last_game_response(name= name, elo= eloStr, hs= None, peak= (allElo['peakElo'], peakEloDate))
+        response = _build_last_game_response(name= name, tag= tag, elo= eloStr, hs= None, peak= (allElo['peakElo'], peakEloDate))
     return response
 
 
@@ -531,7 +533,7 @@ def get_all_enemies_data(region: str, name: str, tag: str) -> dict:
             if (returnedErrorCode is not None):
                 return enemy_data
             else:
-                result = result + _build_last_game_response(name= player['name'],
+                result = result + _build_last_game_response(name= player['name'], tag= player['tag'],
                                                             elo= enemy_data['elo'], hs= enemy_data['HS'], peak= enemy_data['peak']) + "\n\n"
         return result
 
@@ -1376,14 +1378,14 @@ def _extract_last_game_info(region: str, name: str, tag: str, mode_id: str) -> s
         return target_peak  # Return error code
     else:
         if (target_peak[0] == "Unranked"):
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], None]}
+            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'tag': tag, 'peak': [target_peak[0], None]}
         else:
             targetPeakDate = _build_peak_elo_date(target_peak[1])
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
+            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'tag': tag, 'peak': [target_peak[0], targetPeakDate]}
         return result
 
 
-def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
+def _build_last_game_response(name: str, tag: str, elo: str, hs: str, peak: tuple):
     """
         Converts the dictionnary with all the last game data into the string returned by !lg and similar commands.
         Parameters:
@@ -1400,9 +1402,9 @@ def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
         peakElo = f"\n\tPeak: {peak[0]} - {peak[1]}"
 
     if (hs is not None):    # hs none means that RIOT does not track this for the last game mode
-        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + peakElo
+        response = f"{name} #{tag}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + peakElo
     else:
-        response = f"{name}" + f"\n\t{elo}" + peakElo
+        response = f"{name} #{tag}" + f"\n\t{elo}" + peakElo
     return response
 
 
