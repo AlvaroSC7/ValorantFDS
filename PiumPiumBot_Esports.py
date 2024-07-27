@@ -25,6 +25,14 @@ class Esports(commands.Cog):
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
 
+    @commands.command(name='champions')
+    async def get_champions(self, ctx):
+        "Informacion de la Champions"
+        log.startLog()
+        response = valorant.get_vct("champions")
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
     @commands.command(name='koi')
     async def get_koi(self, ctx):
         "Informacion de KOI"

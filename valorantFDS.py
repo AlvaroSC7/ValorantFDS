@@ -406,12 +406,14 @@ def get_vct(competition: str, team: str = None) -> str:
                              "challengers_italy", "challengers_portugal"]
     teams_emea = ["FUT", "TH", "FNC", "NAVI", "KC", "VIT", "TL", "BBL", "M8", "KOI", "GX"]
     teams_na = ["LEV", "KRU", "C9", "SEN", "G2", "100T", "EG", "NRG", "LOUD", "FURIA", "MIBR"]
-    teams_pacific = ["DRX", "PRX", "GEN"]
+    teams_pacific = ["DRX", "PRX", "GEN", "TLN"]
+    teams_china = ["FPX", "BLG", "TE", "EDG"]
     for comp in availableCompetitions:
         available_teams = {comp: []}
     available_teams['vct_emea'] = teams_emea
     available_teams['vct_americas'] = teams_na
     available_teams['vct_pacific'] = teams_pacific
+    available_teams['vct_china'] = teams_china
     # Check if competition is known
     if (competition not in availableCompetitions):
         return errorCode.handleErrorCode(errorCode.ERR_CODE_111)
@@ -1453,11 +1455,18 @@ def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
                    "VIT": "Team Vitality", "TL": "Team Liquid", "BBL": "BBL Esports", "M8": "Gentle Mates", "KOI": "KOI", "GX": "GIANTX"}
     naWrapper = {"LEV": "Leviatán", "KRU": "KRU Esports", "C9": "Cloud9", "SEN": "Sentinels", "G2": "G2 Esports", "100T": "100 Thieves",
                  "EG": "Evil Geniuses", "NRG": "NRG Esports", "LOUD": "LOUD", "FURIA": "FURIA", "MIBR": "MIBR"}
-    pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G"}
-    teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper}
+    pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G", "TLN": "Talon Esports"}
+    chinaWrapper = {"FPX": "FunPlus Phoenix", "BLG": "Bilibili Gaming", "TE": "Trace Esports", "EDG": "EDward Gaming"}
+    teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper, 'vct_china': chinaWrapper}
     requestedTeam = []
     if (team is None):
-        requestedTeam = teamWrapper[competition].values()
+        if (competition in teamWrapper.keys()):
+            # It is a vct league
+            requestedTeam = teamWrapper[competition].values()
+        else:
+            # It is an international event, check all teams
+            for event in teamWrapper:
+                requestedTeam.append(event)
     else:
         requestedTeam.append(teamWrapper[competition][team])
     mapNumber = ["Primer", "Segundo", "Tercer", "Cuarto", "Quinto"]
