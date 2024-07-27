@@ -494,6 +494,48 @@ def get_puuid(region: str, name: str, tag: str) -> str:
         return matchData['data'][0]['stats']['puuid']
 
 
+def get_all_enemies_data(region: str, name: str, tag: str) -> dict:
+    """
+        Get all enemies elo and HS in the last user game.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+        Returns:
+            Response: Data for all enemy players in the last user match
+        """
+
+    # Get last match data
+    matches_request = api.get_v3_matches(region=region, name=name, tag=tag)
+    # Parse data
+    matchData = matches_request.json()
+    _save_json(matchData, jsonName= "get_all_enemies_data")
+    if (len(matchData['data']) == 0):
+        return errorCode.ERR_CODE_101   # Only error for this function is no matches found for the user
+    # If game is DM there are no teams
+    if (matchData['data'][0]['metadata']['mode_id'] == "deathmatch"):
+        return errorCode.handleErrorCode(errorCode.ERR_CODE_126)
+    else:
+        # Get which team was the player on to start looking on the enemies side
+        player_and_opposite_team = _get_player_and_opposite_team(matchData= matchData, name= name, jsonVersion= "v3")
+        if (errorCode.isErrorCode(player_and_opposite_team) is True):
+            return errorCode.handleErrorCode(player_and_opposite_team)     # Return error code
+
+        player_team, opposite_team = player_and_opposite_team   # If it is not an error code it is a tupple
+        result = ""
+        for player in matchData['data'][0]['players'][opposite_team]:
+            enemy_data = _extract_last_game_info(region= region, name= player['name'], tag = player['tag'],
+                                                 mode_id= matchData['data'][0]['metadata']['mode_id'])
+            returnedErrorCode = errorCode.handleErrorCode(enemy_data)
+            if (returnedErrorCode is not None):
+                return enemy_data
+            else:
+                result = result + _build_last_game_response(name= player['name'],
+                                                            elo= enemy_data['elo'], hs= enemy_data['HS'], peak= enemy_data['peak']) + "\n\n"
+        return result
+
+
 ##################################################################
 #                         INTERNAL FUNCTIONS                     #
 ##################################################################

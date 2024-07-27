@@ -51,7 +51,7 @@ class ErrorCodes:
         self.ERR_CODE_123 = "ERR_CODE_123"  # Wrong team name
         self.ERR_CODE_124 = "ERR_CODE_124"  # Map selected when agent or player name was expected
         self.ERR_CODE_125 = "ERR_CODE_125"  # Wrong parameter in roulette
-        self.ERR_CODE_126 = "ERR_CODE_126"
+        self.ERR_CODE_126 = "ERR_CODE_126"  # Last game was a DM for a command that does not allow it
         self.ERR_CODE_127 = "ERR_CODE_127"
         self.ERR_CODE_128 = "ERR_CODE_128"
         self.ERR_CODE_129 = "ERR_CODE_129"
@@ -197,6 +197,9 @@ class ErrorCodes:
         elif (errorCode == self.ERR_CODE_125):
             result = "Parametro inesperado. Para tirar la ruleta usa !ruleta. Para resetear la ruleta usa !ruleta reset"
             logMessage = f"{calframe[3][3]}: {errorCode} - Wrong roulette parameter"
+        elif (errorCode == self.ERR_CODE_126):
+            result = "La ultima partida es un DM. Este comando solo admite partidas por equipos"
+            logMessage = f"{calframe[3][3]}: {errorCode} - Last game was a DM for a command that does not allow it"
         else:
             result = self._errorUnknownError()
 
