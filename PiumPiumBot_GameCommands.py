@@ -220,6 +220,22 @@ class GameCommands(commands.Cog):
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
 
+    @commands.command(name='enemies')
+    async def get_all_enemies_data(self, ctx):
+        "Datos de todos los enemigos"
+        log.startLog()
+        author = ctx.message.author
+        player = valorant.get_player_data(player=author)
+        errorCode = errorCodeList.handleErrorCode(player)
+        if (errorCode is not None):
+            await ctx.send(errorCode)
+        else:
+            response = valorant.get_all_enemies_data(region= player['region'], name= player['name'], tag= player['tag'])
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
+    get_all_enemies_data
+
     def bot_reset_roulette():
         "Function to be called periodically to reset automatically roulette pool"
         if (len(roulette.pool) < roulette.totalPoolSize):
