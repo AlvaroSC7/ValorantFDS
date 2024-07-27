@@ -3,7 +3,7 @@ import re
 from random import choice
 from valorantFDS_API import ValorantFDS_API, vlrgg_API
 from PiumPiumBot_Config import PiumPiumBot_Config
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes
 
 api = ValorantFDS_API()
 vlrgg = vlrgg_API()
@@ -129,7 +129,8 @@ def get_last_match_data(region: str, name: str, tag: str, target_player: str, ta
             if (returnedErrorCode is not None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= targetData['name'], elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
+                response = _build_last_game_response(name= targetData['name'], tag= targetData['tag'],
+                                                     elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
         else:   # It can be an error or just a player name
             # Get elo and HS of the selected player
             targetData = _get_last_match_player_data(region= region, name= name, tag= tag, targetName= target_player)
@@ -137,7 +138,8 @@ def get_last_match_data(region: str, name: str, tag: str, target_player: str, ta
             if (returnedErrorCode is not None):
                 response = returnedErrorCode
             else:
-                response = _build_last_game_response(name= target_player, elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
+                response = _build_last_game_response(name= target_player, tag= targetData['tag'],
+                                                     elo= targetData['elo'], hs= targetData['HS'], peak= targetData['peak'])
     return response
 
 
@@ -161,7 +163,7 @@ def get_any_player_info(region: str, name: str, tag: str) -> str:
         else:
             eloStr = f"{allElo['rank']} - {allElo['elo']}"
         peakEloDate = _build_peak_elo_date(allElo['peakEloDate'])
-        response = _build_last_game_response(name= name, elo= eloStr, hs= None, peak= (allElo['peakElo'], peakEloDate))
+        response = _build_last_game_response(name= name, tag= tag, elo= eloStr, hs= None, peak= (allElo['peakElo'], peakEloDate))
     return response
 
 
@@ -404,12 +406,14 @@ def get_vct(competition: str, team: str = None) -> str:
                              "challengers_italy", "challengers_portugal"]
     teams_emea = ["FUT", "TH", "FNC", "NAVI", "KC", "VIT", "TL", "BBL", "M8", "KOI", "GX"]
     teams_na = ["LEV", "KRU", "C9", "SEN", "G2", "100T", "EG", "NRG", "LOUD", "FURIA", "MIBR"]
-    teams_pacific = ["DRX", "PRX", "GEN"]
+    teams_pacific = ["DRX", "PRX", "GEN", "TLN"]
+    teams_china = ["FPX", "BLG", "TE", "EDG"]
     for comp in availableCompetitions:
         available_teams = {comp: []}
     available_teams['vct_emea'] = teams_emea
     available_teams['vct_americas'] = teams_na
     available_teams['vct_pacific'] = teams_pacific
+    available_teams['vct_china'] = teams_china
     # Check if competition is known
     if (competition not in availableCompetitions):
         return errorCode.handleErrorCode(errorCode.ERR_CODE_111)
@@ -447,14 +451,14 @@ def get_vct(competition: str, team: str = None) -> str:
                     # All teams requested or exactly a match of the requested team
                     if (game['state'] == "completed"):
                         if (completedGamesFlag is False):
-                            result = result + "\nUltimos partidos:"
+                            result = result + "\n\nUltimos partidos:\n"
                             completedGamesFlag = True
-                        result = result + f"\n\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                        result = result + f"\t{game['match']['teams'][0]['name']} {game['match']['teams'][0]['game_wins']}-{game['match']['teams'][1]['game_wins']} {game['match']['teams'][1]['name']}" + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
                     elif (game['state'] == "unstarted"):
                         if (nextGamesFlag is False):
-                            result = result + "\nProximos partidos:"
+                            result = result + "\nProximos partidos:\n"
                             nextGamesFlag = True
-                        result = result + "\n\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
+                        result = result + "\t" + game['match']['teams'][0]['name'] + " - " + game['match']['teams'][1]['name'] + "  " + _translate_date(game['date']) + "\n"   # noqa: E501 - Messages of the bot. Easier for the user this way. Multiline would decrease readability
             # Check if there is any data of the selected team or competition
             if (result == ""):
                 result = errorCode.handleErrorCode(errorCode= errorCode.ERR_CODE_104)
@@ -492,6 +496,48 @@ def get_puuid(region: str, name: str, tag: str) -> str:
         return errorCode.ERR_CODE_101
     else:
         return matchData['data'][0]['stats']['puuid']
+
+
+def get_all_enemies_data(region: str, name: str, tag: str) -> dict:
+    """
+        Get all enemies elo and HS in the last user game.
+
+        Parameters:
+            region      (str):  Player region
+            name        (str):  Player user name
+            tag         (str):  Player tag
+        Returns:
+            Response: Data for all enemy players in the last user match
+        """
+
+    # Get last match data
+    matches_request = api.get_v3_matches(region=region, name=name, tag=tag)
+    # Parse data
+    matchData = matches_request.json()
+    _save_json(matchData, jsonName= "get_all_enemies_data")
+    if (len(matchData['data']) == 0):
+        return errorCode.ERR_CODE_101   # Only error for this function is no matches found for the user
+    # If game is DM there are no teams
+    if (matchData['data'][0]['metadata']['mode_id'] == "deathmatch"):
+        return errorCode.handleErrorCode(errorCode.ERR_CODE_126)
+    else:
+        # Get which team was the player on to start looking on the enemies side
+        player_and_opposite_team = _get_player_and_opposite_team(matchData= matchData, name= name, jsonVersion= "v3")
+        if (errorCode.isErrorCode(player_and_opposite_team) is True):
+            return errorCode.handleErrorCode(player_and_opposite_team)     # Return error code
+
+        player_team, opposite_team = player_and_opposite_team   # If it is not an error code it is a tupple
+        result = ""
+        for player in matchData['data'][0]['players'][opposite_team]:
+            enemy_data = _extract_last_game_info(region= region, name= player['name'], tag = player['tag'],
+                                                 mode_id= matchData['data'][0]['metadata']['mode_id'])
+            returnedErrorCode = errorCode.handleErrorCode(enemy_data)
+            if (returnedErrorCode is not None):
+                return enemy_data
+            else:
+                result = result + _build_last_game_response(name= player['name'], tag= player['tag'],
+                                                            elo= enemy_data['elo'], hs= enemy_data['HS'], peak= enemy_data['peak']) + "\n\n"
+        return result
 
 
 ##################################################################
@@ -1334,14 +1380,14 @@ def _extract_last_game_info(region: str, name: str, tag: str, mode_id: str) -> s
         return target_peak  # Return error code
     else:
         if (target_peak[0] == "Unranked"):
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], None]}
+            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'tag': tag, 'peak': [target_peak[0], None]}
         else:
             targetPeakDate = _build_peak_elo_date(target_peak[1])
-            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'peak': [target_peak[0], targetPeakDate]}
+            result = {'elo': target_elo, 'HS': target_HS, 'name': name, 'tag': tag, 'peak': [target_peak[0], targetPeakDate]}
         return result
 
 
-def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
+def _build_last_game_response(name: str, tag: str, elo: str, hs: str, peak: tuple):
     """
         Converts the dictionnary with all the last game data into the string returned by !lg and similar commands.
         Parameters:
@@ -1358,9 +1404,9 @@ def _build_last_game_response(name: str, elo: str, hs: str, peak: tuple):
         peakElo = f"\n\tPeak: {peak[0]} - {peak[1]}"
 
     if (hs is not None):    # hs none means that RIOT does not track this for the last game mode
-        response = f"{name}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + peakElo
+        response = f"{name} #{tag}" + f"\n\t{elo}" + f"\n\tPorcentaje de headshot: {hs}%" + peakElo
     else:
-        response = f"{name}" + f"\n\t{elo}" + peakElo
+        response = f"{name} #{tag}" + f"\n\t{elo}" + peakElo
     return response
 
 
@@ -1409,11 +1455,18 @@ def _get_vlrgg_live_game(competition: str, team: str = None) -> str:
                    "VIT": "Team Vitality", "TL": "Team Liquid", "BBL": "BBL Esports", "M8": "Gentle Mates", "KOI": "KOI", "GX": "GIANTX"}
     naWrapper = {"LEV": "Leviatán", "KRU": "KRU Esports", "C9": "Cloud9", "SEN": "Sentinels", "G2": "G2 Esports", "100T": "100 Thieves",
                  "EG": "Evil Geniuses", "NRG": "NRG Esports", "LOUD": "LOUD", "FURIA": "FURIA", "MIBR": "MIBR"}
-    pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G"}
-    teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper}
+    pacificWrapper = {"DRX": "DRX", "PRX": "Paper Rex", "GEN": "Gen.G", "TLN": "Talon Esports"}
+    chinaWrapper = {"FPX": "FunPlus Phoenix", "BLG": "Bilibili Gaming", "TE": "Trace Esports", "EDG": "EDward Gaming"}
+    teamWrapper = {'vct_emea': emeaWrapper, 'vct_americas': naWrapper, 'vct_pacific': pacificWrapper, 'vct_china': chinaWrapper}
     requestedTeam = []
     if (team is None):
-        requestedTeam = teamWrapper[competition].values()
+        if (competition in teamWrapper.keys()):
+            # It is a vct league
+            requestedTeam = teamWrapper[competition].values()
+        else:
+            # It is an international event, check all teams
+            for event in teamWrapper:
+                requestedTeam.append(event)
     else:
         requestedTeam.append(teamWrapper[competition][team])
     mapNumber = ["Primer", "Segundo", "Tercer", "Cuarto", "Quinto"]
@@ -1445,14 +1498,3 @@ def _get_vlrgg_rounds_score(game: dict) -> tuple:
     team2_score = team2_round_ct + team2_round_t
     return team1_score, team2_score
 
-
-def main():
-    name = "SpaguettiCoded"
-    region = "eu"
-    tag = "EUW"
-    target = "Omen"
-    print(peak_elo(region= region, name= name, tag= "ESP", target_player= tag, targetTeam= target))
-
-
-if __name__ == "__main__":
-    main()

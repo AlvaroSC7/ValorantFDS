@@ -5,7 +5,7 @@ from os.path import isfile
 from PiumPiumBot_Config import PiumPiumBot_Config, PiumPiumBot_Log
 from valorantFDS import RoulettePool
 import valorantFDS as valorant
-from PiumPiumBot_ErrorCodes import ErrorCodes
+from PiumPiumBot_ErrorHandling import ErrorCodes
 
 errorCodeList = ErrorCodes()
 logger = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ roulette = RoulettePool()
 # To Do: comando sonido ace
 # To Do: comando acs last game
 # To Do: comando que implemente bug ticket. Envia un correo a mi email, que se saca de un txt privado
-# To Do: Implement !champions when format is known
 # To Do: Investigate twitter bot
 
 
@@ -219,6 +218,22 @@ class GameCommands(commands.Cog):
             response = valorant.get_any_player_info(region= region, name= player, tag= tag)
         await ctx.send(response)
         log.finishLog(ctx.invoked_with)
+
+    @commands.command(name='enemies')
+    async def get_all_enemies_data(self, ctx):
+        "Datos de todos los enemigos"
+        log.startLog()
+        author = ctx.message.author
+        player = valorant.get_player_data(player=author)
+        errorCode = errorCodeList.handleErrorCode(player)
+        if (errorCode is not None):
+            await ctx.send(errorCode)
+        else:
+            response = valorant.get_all_enemies_data(region= player['region'], name= player['name'], tag= player['tag'])
+        await ctx.send(response)
+        log.finishLog(ctx.invoked_with)
+
+    get_all_enemies_data
 
     def bot_reset_roulette():
         "Function to be called periodically to reset automatically roulette pool"

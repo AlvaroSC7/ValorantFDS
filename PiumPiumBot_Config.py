@@ -9,14 +9,10 @@ logger = logging.getLogger(__name__)
 
 class PiumPiumBot_Config:
     def __init__(self):
-        #Version
-        self.version = '1.0.12'
+        # Version
+        self.version = '1.0.13'
         self.type = 'PROD'
         self.host = PiumPiumBot_Host(url= 'https://control.bot-hosting.net/server/9f84f86d', id= '9f84f86d-7eab-40c5-94b2-7602d0d69208', node= 'fi3')
-        if (self.type == 'DEV'):
-            self.logLevel = logging.INFO
-        else:
-            self.logLevel = logging.ERROR
         # Paths
         self.WS_PATH = dirname(abspath(__file__))
         self.TEMP_PATH = self.WS_PATH + "/temp"
@@ -27,6 +23,17 @@ class PiumPiumBot_Config:
         self.TOOLS_PATH = self.WS_PATH + "/tools"
         # Flake8 configuration
         self.FOLDERS_TO_ANALYZE = [self.WS_PATH, self.TOOLS_PATH]
+        # Bug report
+        self.bugReportMailProd = "piumpiumbot@gmail.com"
+        self.bugReportMailDev = "piumpiumbotdev@gmail.com"
+
+        # Automatic configuration - DO NOT TOUCH
+        if (self.type == 'DEV'):
+            self.logLevel = logging.INFO
+            self.bugReportMail = self.bugReportMailDev
+        else:
+            self.logLevel = logging.ERROR
+            self.bugReportMail = self.bugReportMailProd
 
     def clean_logs(self):
         today = datetime.now()
